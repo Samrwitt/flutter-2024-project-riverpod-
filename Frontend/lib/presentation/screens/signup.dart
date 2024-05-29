@@ -1,20 +1,37 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/password.dart';
 import '../widgets/email.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/ui_provider.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
+final uiProviderProvider = ChangeNotifierProvider((ref) => UIProvider());
+
+class SignupPage extends ConsumerStatefulWidget {
+  const SignupPage({Key? key}) : super(key: key);
 
   @override
-  SignupPageState createState() => SignupPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class SignupPageState extends State<SignupPage> {
-  final GlobalKey<EmailFieldState> _emailFieldKey = GlobalKey<EmailFieldState>();
+class _SignupPageState extends ConsumerState<SignupPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = ref.watch(authProviderProvider);
+    final emailField = ref.watch(emailFieldProvider);
+
     return Scaffold(
       appBar: AppBar(),
       body: Center(
@@ -25,15 +42,17 @@ class SignupPageState extends State<SignupPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [const Center(child:Text(
-                      'Welcome, New User',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 25,
-                      ),
+              children: [
+                const Center(
+                  child: Text(
+                    'Welcome, New User',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 25,
                     ),
+                  ),
                 ),
-                const SizedBox(height: 20,),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -45,25 +64,26 @@ class SignupPageState extends State<SignupPage> {
                             text: "Already have an account? ",
                             style: TextStyle(
                               color: Colors.black,
-                            )),
+                            ),
+                          ),
                           TextSpan(
-                              text: 'Sign in Here',
-                              style: const TextStyle(
-                                color: Colors.blueGrey,
-                                decoration: TextDecoration.underline,
-                                ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Navigator.pushNamed(context, '/login');
-                                }
-                            )
-                          ]
-                        ),
+                            text: 'Sign in Here',
+                            style: const TextStyle(
+                              color: Colors.blueGrey,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pushNamed(context, '/login');
+                              },
+                          ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                EmailField(key: _emailFieldKey),
+                EmailField(controller: _emailController), // Pass controller
                 const SizedBox(height: 10),
                 const TextField(
                   decoration: InputDecoration(
@@ -78,27 +98,61 @@ class SignupPageState extends State<SignupPage> {
                   style: TextStyle(
                     fontFamily: 'San Serif',
                     fontSize: 16,
-                    color:Colors.black),
+                    color: Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                const PasswordWidget(),
+                PasswordField(controller: _passwordController), // Pass controller
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
-                    final isValidEmail = _emailFieldKey.currentState?.isSignUpEnabled() ?? false;
+                  onPressed: () async {
+                    final isValidEmail = emailField.isValid; // Check email validation
                     if (isValidEmail) {
-                      Navigator.pushNamed(context, '/notes');
+                      await authProvider.signupUser(
+                        _emailController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+                      if (!authProvider.hasError) {
+                        Navigator.pushNamed(context, '/notes');
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text(
+                                'Signup Error',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              content: Text(authProvider.error ?? 'An unknown error occurred.'),
+                              backgroundColor: Colors.grey[900],
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
                     } else {
                       showDialog(
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Invalid Email',
-                            style: TextStyle(
-                              color: Colors.white
+                            title: const Text(
+                              'Invalid Email',
+                              style: TextStyle(
+                                color: Colors.white,
                               ),
                             ),
-                            content: const Text('Please enter a valid email address.'),
+                            content: const Text(
+                              'Please enter a valid email address.',
+                            ),
                             backgroundColor: Colors.grey[900],
                             actions: [
                               TextButton(
@@ -120,7 +174,12 @@ class SignupPageState extends State<SignupPage> {
                       fontFamily: 'San Serif',
                     ),
                   ),
-                  child: const Text('Sign Up', style:TextStyle(color: Colors.blueGrey)),
+                  child: authProvider.isLoading
+                      ? CircularProgressIndicator()
+                      : const Text(
+                          'Sign Up',
+                          style: TextStyle(color: Colors.blueGrey),
+                        ),
                 ),
               ],
             ),

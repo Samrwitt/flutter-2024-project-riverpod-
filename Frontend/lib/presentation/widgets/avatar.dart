@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import "package:digital_notebook/providers/navigatorkey_provider.dart";
 
-class CircleAvatarWidget extends StatelessWidget {
-  const CircleAvatarWidget({required Key key}) : super(key: key);
+// Provider for handling the logout functionality
+final logoutProvider = Provider.autoDispose((ref) {
+  return () {
+    ref.read(navigatorKeyProvider).currentState?.pushReplacementNamed('/login');
+  };
+});
+
+class CircleAvatarWidget extends ConsumerWidget {
+  const CircleAvatarWidget({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logout = ref.watch(logoutProvider);
+
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext context) {
         return [
@@ -16,7 +27,7 @@ class CircleAvatarWidget extends StatelessWidget {
       },
       onSelected: (String value) {
         if (value == 'logout') {
-          Navigator.pushNamed(context, '/login');
+          logout(); // Call the logout function provided by the provider
         }
       },
       child: const CircleAvatar(

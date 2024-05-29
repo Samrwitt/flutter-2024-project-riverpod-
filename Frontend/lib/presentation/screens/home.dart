@@ -1,7 +1,6 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -71,7 +70,7 @@ class HomePage extends StatelessWidget {
                 Navigator.pushNamed(context, '/signup');
               },
               style: ButtonStyle(
-                minimumSize: MaterialStateProperty.all<Size> (const Size(150, 50)), // Adjusted button size
+                minimumSize: MaterialStateProperty.all<Size>(const Size(150, 50)), // Adjusted button size
                 backgroundColor: MaterialStateProperty.resolveWith<Color>(
                   (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
@@ -92,7 +91,9 @@ class HomePage extends StatelessWidget {
               child: const Text(
                 'Register Here',
                 style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.w400, fontSize:18 // Black text color
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 18, // Black text color
                 ),
               ),
             ),
@@ -106,38 +107,38 @@ class HomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        children: <TextSpan>[
-                          TextSpan(
-                              text: 'Click Here',
-                              style: const TextStyle(
-                                color: Colors.blueGrey,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                                ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Navigator.pushNamed(context, '/admin');
-                                }
-                            ),
-                          const TextSpan(
-                            text: " for Admin",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'Click Here',
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.pushNamed(context, '/adminLogin');
+                          },
                       ),
-                    ),
-                  ],
+                      const TextSpan(
+                        text: " for Admin",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )
-            ]
-      )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

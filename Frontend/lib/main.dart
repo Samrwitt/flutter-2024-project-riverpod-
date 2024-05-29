@@ -9,6 +9,7 @@ import 'package:digital_notebook/presentation/screens/login.dart';
 import 'package:digital_notebook/presentation/screens/signup.dart';
 import 'package:digital_notebook/presentation/screens/notes.dart';
 import 'package:digital_notebook/presentation/screens/others.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum ThemeModeOption {
   white,
@@ -18,7 +19,11 @@ enum ThemeModeOption {
 }
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ProviderScope(
+    child: const MyApp(),
+  ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -34,7 +39,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = buildThemeData();
-     // Build theme data dynamically
+    
     return MaterialApp(
       themeMode: currentThemeMode == ThemeModeOption.dark
           ? ThemeMode.dark
@@ -44,15 +49,15 @@ class MyAppState extends State<MyApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomePage(),
-        '/admin': (context) => const AdminPage(),
-        'other': (context)=> const ViewOtherNotesPage(),
+        '/admin': (context) => AdminPage(),
+        '/other': (context)=> ViewOtherNotesPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/notes': (context) => const Notepage(),
-        '/adminLogin':(context) =>const  AdminLoginPage(),
+        '/adminLogin':(context) => const AdminLoginPage(),
         '/adminNotes': (context) => AdminNotepage(
             onNewNoteCreated: (note) {
-              // Do nothing
+              
             },
             currentIndex: 0,
           ),

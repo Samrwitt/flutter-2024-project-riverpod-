@@ -1,20 +1,27 @@
-// ignore_for_file: file_names
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:digital_notebook/models/note_model.dart';
+import 'package:digital_notebook/providers/notes_provider.dart';
 
-class AdminNotepage extends StatefulWidget {
-  const AdminNotepage({super.key, required this.onNewNoteCreated, required this.currentIndex});
+class AdminNotepage extends ConsumerStatefulWidget {
+  const AdminNotepage({Key? key, required this.currentIndex, required Null Function(dynamic note) onNewNoteCreated}) : super(key: key);
 
-  final Function(Note) onNewNoteCreated;
   final int currentIndex;
 
   @override
-  State<AdminNotepage> createState() => AdminNotepageState();
+  ConsumerState<AdminNotepage> createState() => AdminNotepageState();
 }
 
-class AdminNotepageState extends State<AdminNotepage> {
+class AdminNotepageState extends ConsumerState<AdminNotepage> {
   final titleController = TextEditingController();
   final bodyController = TextEditingController();
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    bodyController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +33,29 @@ class AdminNotepageState extends State<AdminNotepage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(15.0),
         child: Column(
-          children: <Widget>[
-            TextField(
+          children: [
+            TextFormField(
               controller: titleController,
-              decoration: const InputDecoration(hintText: 'Note title'),
+              style: const TextStyle(fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: "Title",
+              ),
+              maxLines: null,
             ),
-            TextField(
+            const SizedBox(height: 10),
+            TextFormField(
               controller: bodyController,
-              decoration: const InputDecoration(hintText: 'Note body'),
+              style: const TextStyle(fontSize: 18, color: Colors.black),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: "Enter your note here...",
+              ),
+              maxLines: null,
             ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 final note = Note(
@@ -44,7 +63,7 @@ class AdminNotepageState extends State<AdminNotepage> {
                   body: bodyController.text,
                   index: widget.currentIndex,
                 );
-                widget.onNewNoteCreated(note);
+                ref.read(notesProvider.notifier).addNote(note);
                 Navigator.pop(context);
               },
               child: const Text('Save Note'),

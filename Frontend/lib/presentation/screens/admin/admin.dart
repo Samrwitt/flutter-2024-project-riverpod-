@@ -1,42 +1,45 @@
 import 'package:flutter/material.dart';
-import './add_activity_dialog.dart';
-import './adminOthers.dart';
-import './adminNotes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'add_activity_dialog.dart';
+import 'adminOthers.dart';
+import 'adminNotes.dart';
+import '../../../providers/activities_provider.dart';
 
 
-class AdminPage extends StatefulWidget {
+class AdminPage extends ConsumerStatefulWidget {
   const AdminPage({super.key});
 
   @override
-  AdminPageState createState() => AdminPageState();
+  ConsumerState<AdminPage> createState() => _AdminPageState();
 }
 
-class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixin {
-  List<Activity> activities = [];
+class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProviderStateMixin {
   TextEditingController activityController = TextEditingController();
   TextEditingController userController = TextEditingController();
   DateTime? _selectedDateTime;
-  late TabController _tabController; // Define TabController
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Initialize TabController
-    _tabController.addListener(_handleTabSelection); // Add listener for tab selection
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_handleTabSelection);
   }
 
   void _handleTabSelection() {
-    setState(() {}); // Update the state when a tab is selected
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final activities = ref.watch(activitiesProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin', style: TextStyle(fontSize: 25) ,),
+        title: const Text('Admin', style: TextStyle(fontSize: 25)),
       ),
       body: TabBarView(
-        controller: _tabController, // Assign TabController to TabBarView
+        controller: _tabController,
         children: [
           // Current page content (AdminHomePage)
           ListView.builder(
@@ -47,7 +50,8 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
                   ListTile(
                     title: Text(activities[index].name),
                     subtitle: Text(
-                      'User: ${activities[index].user}, Date: ${activities[index].date}, Time: ${activities[index].time}'),
+                      'User: ${activities[index].user}, Date: ${activities[index].date}, Time: ${activities[index].time}',
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -60,7 +64,7 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
                         IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () {
-                            _deleteActivity(index);
+                            ref.read(activitiesProvider.notifier).deleteActivity(index);
                           },
                         ),
                       ],
@@ -90,29 +94,31 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
             },
           ),
           // Notes page content
-          AdminNotepage(onNewNoteCreated: (note) {
-            //do Nothing
+          AdminNotepage(
+            onNewNoteCreated: (note) {
+              // do Nothing
             },
             currentIndex: 0,
-            ),
+          ),
           // Other People page content
           const AdminOthersPage(),
         ],
       ),
-      floatingActionButton: _tabController.index == 0 // Show FAB only on the home page
+      floatingActionButton: _tabController.index == 0
           ? FloatingActionButton(
               onPressed: () {
                 _showAddActivityDialog(context);
-              }, backgroundColor: Colors.blueGrey,
+              },
+              backgroundColor: Colors.blueGrey,
               child: const Icon(Icons.add, color: Colors.white),
             )
           : null,
       bottomNavigationBar: TabBar(
-        controller: _tabController, // Assign TabController to TabBar
+        controller: _tabController,
         tabs: const [
-          Tab(icon: Icon(Icons.history, color:Colors.blueGrey), text: 'History',), // Current page
-          Tab(icon: Icon(Icons.notes, color:Colors.blueGrey), text: 'Notes',), // Notes page
-          Tab(icon: Icon(Icons.people_alt, color:Colors.blueGrey), text: "Other's Notes",), // Other People page
+          Tab(icon: Icon(Icons.history, color: Colors.blueGrey), text: 'History'),
+          Tab(icon: Icon(Icons.notes, color: Colors.blueGrey), text: 'Notes'),
+          Tab(icon: Icon(Icons.people_alt, color: Colors.blueGrey), text: "Other's Notes"),
         ],
       ),
     );
@@ -138,18 +144,13 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
   }
 
   void _addActivity(String user, String activityName, DateTime dateTime) {
-    setState(() {
-      activities.add(Activity(
-        user: user,
-        name: activityName,
-        date: '${dateTime.year}-${dateTime.month}-${dateTime.day}',
-        time: '${dateTime.hour}:${dateTime.minute}',
-        logs: ['Added at ${DateTime.now()}'], // Log entry for adding the activity
-      ));
-    });
+    ref.read(activitiesProvider.notifier).addActivity(user, activityName, dateTime);
   }
 
   void _showEditActivityDialog(BuildContext context, int index) {
+    final editUserController = TextEditingController(text: ref.read(activitiesProvider)[index].user);
+    final editActivityController = TextEditingController(text: ref.read(activitiesProvider)[index].name);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -159,22 +160,14 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: TextEditingController(text: activities[index].user),
-                decoration: const InputDecoration(
-                  labelText: 'User'
-                  ),
-                  style: const TextStyle(
-                    color: Colors.black,
-                ),
+                controller: editUserController,
+                decoration: const InputDecoration(labelText: 'User'),
+                style: const TextStyle(color: Colors.black),
               ),
               TextField(
-                controller: TextEditingController(text: activities[index].name),
-                decoration: const InputDecoration(
-                  labelText: 'Activity',
-                  ),
-                  style: const TextStyle(
-                    color: Colors.black,
-                ),
+                controller: editActivityController,
+                decoration: const InputDecoration(labelText: 'Activity'),
+                style: const TextStyle(color: Colors.black),
               ),
             ],
           ),
@@ -182,7 +175,7 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _editActivity(index, userController.text, activityController.text);
+                _editActivity(index, editUserController.text, editActivityController.text);
               },
               child: const Text('Save'),
             ),
@@ -199,29 +192,12 @@ class AdminPageState extends State<AdminPage> with SingleTickerProviderStateMixi
   }
 
   void _editActivity(int index, String newUser, String newName) {
-    setState(() {
-      var editedActivity = activities[index];
-      editedActivity.user = newUser;
-      editedActivity.name = newName;
-      editedActivity.logs.add('Edited at ${DateTime.now()}'); // Log entry for editing the activity
-    });
+    final selectedActivity = ref.read(activitiesProvider)[index];
+    ref.read(activitiesProvider.notifier).editActivity(
+      index,
+      newUser,
+      newName,
+      DateTime.parse('${selectedActivity.date} ${selectedActivity.time.padLeft(5, '0')}:00'),
+    );
   }
-
-  void _deleteActivity(int index) {
-    setState(() {
-      var deletedActivity = activities[index];
-      deletedActivity.logs.add('Deleted at ${DateTime.now()}'); // Log entry for deleting the activity
-      activities.removeAt(index);
-    });
-  }
-}
-
-class Activity {
-  String user;
-  String name;
-  String date;
-  String time;
-  List<String> logs;
-
-  Activity({required this.user, required this.name, required this.date, required this.time, this.logs = const []});
 }

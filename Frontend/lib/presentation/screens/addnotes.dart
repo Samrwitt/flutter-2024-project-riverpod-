@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:digital_notebook/models/note_model.dart';
 
 class AddNote extends StatefulWidget {
-  const AddNote({super.key, required this.onNewNoteCreated, required this.currentIndex});
+  const AddNote({Key? key, required this.onNewNoteCreated, required this.currentIndex})
+      : super(key: key);
 
   final Function(Note) onNewNoteCreated;
   final int currentIndex;
 
   @override
-  State<AddNote> createState() => _AddNoteState();
+  _AddNoteState createState() => _AddNoteState();
 }
 
 class _AddNoteState extends State<AddNote> {
-  final titleController = TextEditingController();
-  final bodyController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _bodyController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _bodyController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +29,7 @@ class _AddNoteState extends State<AddNote> {
       appBar: AppBar(
         title: const Text(
           'Add Note',
-          style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 23, fontWeight: FontWeight.w300),
         ),
       ),
       body: Padding(
@@ -29,8 +37,9 @@ class _AddNoteState extends State<AddNote> {
         child: Column(
           children: [
             TextFormField(
-              controller: titleController,
-              style: const TextStyle(fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
+              controller: _titleController,
+              style: const TextStyle(
+                  fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: "Title",
@@ -39,7 +48,7 @@ class _AddNoteState extends State<AddNote> {
             ),
             const SizedBox(height: 10),
             TextFormField(
-              controller: bodyController,
+              controller: _bodyController,
               style: const TextStyle(fontSize: 18, color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
@@ -47,11 +56,11 @@ class _AddNoteState extends State<AddNote> {
               ),
               maxLines: null,
             ),
-          ElevatedButton(
+            ElevatedButton(
               onPressed: () {
                 final note = Note(
-                  title: titleController.text,
-                  body: bodyController.text,
+                  title: _titleController.text,
+                  body: _bodyController.text,
                   index: widget.currentIndex,
                 );
                 widget.onNewNoteCreated(note);
@@ -59,7 +68,7 @@ class _AddNoteState extends State<AddNote> {
               },
               child: const Text('Save Note'),
             ),
-          ]
+          ],
         ),
       ),
     );
