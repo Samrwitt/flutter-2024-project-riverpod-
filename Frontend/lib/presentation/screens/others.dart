@@ -1,51 +1,57 @@
 import 'package:flutter/material.dart';
-class _Note {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class Note {
   final String title;
   final String content;
 
-  _Note({required this.title, required this.content});
+  Note({required this.title, required this.content});
 }
 
-// ignore: unused_element
-class _ViewNotesPage extends StatelessWidget {
-  // Sample list of notes (replace with your data)
-  final List<_Note> notes = [
-    _Note(
+final notesProvider = StateNotifierProvider<NotesNotifier, List<Note>>((ref) {
+  return NotesNotifier([
+    Note(
       title: 'Note 1',
       content: 'This is the content of note 1.',
     ),
-    _Note(
+    Note(
       title: 'Note 2',
       content: 'This is the content of note 2.',
     ),
-    _Note(
+    Note(
       title: 'Note 3',
       content: 'This is the content of note 3.',
     ),
-  ];
+  ]);
+});
 
-  _ViewNotesPage();
+class NotesNotifier extends StateNotifier<List<Note>> {
+  NotesNotifier(List<Note> notes) : super(notes);
+}
 
+class ViewNotesPage extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notes = ref.watch(notesProvider);
+
     return Scaffold(
       body: Theme(
         data: Theme.of(context).copyWith(
           dialogBackgroundColor: Colors.grey[400],
         ),
         child: ListView.builder(
-            itemCount: notes.length,
-            itemBuilder: (context, index) {
-              final note = notes[index];
-              return OthersNotesCard(
-                title: note.title,
-                content: note.content,
-                onTap: () {
-                  _showNoteDetails(context, note.title);
-                },
-              );
-            },
-          ),
+          itemCount: notes.length,
+          itemBuilder: (context, index) {
+            final note = notes[index];
+            return OthersNotesCard(
+              title: note.title,
+              content: note.content,
+              onTap: () {
+                _showNoteDetails(context, note.title);
+              },
+            );
+          },
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
@@ -65,34 +71,30 @@ class _ViewNotesPage extends StatelessWidget {
   }
 }
 
-class ViewOtherNotesPage extends StatelessWidget {
-  const ViewOtherNotesPage({super.key});
-
+class ViewOtherNotesPage extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-        body: Theme(
-          data: Theme.of(context).copyWith(
-            dialogBackgroundColor: Colors.grey[700],
-          ),
-          child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return OthersNotesCard(
-
-                  title: 'Note ${index + 1}',
-                  content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                  onTap: () {
-                    _showNoteDetails(context, 'Note ${index + 1}');
-                  },
-                );
-              },
-            ),
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          dialogBackgroundColor: Colors.grey[700],
         ),
-        );
+        child: ListView.builder(
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            return OthersNotesCard(
+              title: 'Note ${index + 1}',
+              content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+              onTap: () {
+                _showNoteDetails(context, 'Note ${index + 1}');
+              },
+            );
+          },
+        ),
+      ),
+    );
   }
 }
-
 
 class OthersNoteDetailsDialog extends StatelessWidget {
   final String noteTitle;
@@ -130,22 +132,22 @@ class OthersNoteDetailsDialog extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-      const SizedBox(height: 16),
+          const SizedBox(height: 16),
           const SizedBox(height: 16),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-          const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   const Text(
-                  'Cillum tempor aute do esse exercitation nulla tempor. Non laborum enim tempor amet quis minim fugiat. Nulla aliqua consequat duis qui aliquip Lorem.',
-                    style:  TextStyle(
+                    'Cillum tempor aute do esse exercitation nulla tempor. Non laborum enim tempor amet quis minim fugiat. Nulla aliqua consequat duis qui aliquip Lorem.',
+                    style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
                     ),
                   ),
-          const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -163,17 +165,15 @@ class OthersNoteDetailsDialog extends StatelessWidget {
   }
 }
 
+void _showNoteDetails(BuildContext context, String noteTitle) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return OthersNoteDetailsDialog(noteTitle: noteTitle);
+    },
+  );
+}
 
-
-
-  void _showNoteDetails(BuildContext context, String noteTitle) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return OthersNoteDetailsDialog(noteTitle: noteTitle);
-      },
-    );
-  }
 class OthersNotesCard extends StatelessWidget {
   final String title;
   final String content;
@@ -188,7 +188,6 @@ class OthersNotesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Return a widget here, for example:
     return Card(
       child: ListTile(
         title: Text(title),
@@ -197,10 +196,12 @@ class OthersNotesCard extends StatelessWidget {
       ),
     );
   }
+}
 
 void main() {
-  runApp(MaterialApp(
-    home: _ViewNotesPage(),
+  runApp(ProviderScope(
+    child: MaterialApp(
+      home: ViewNotesPage(),
+    ),
   ));
-}
 }

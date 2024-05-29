@@ -1,37 +1,65 @@
-// ignore_for_file: file_names
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/password.dart';
 import '../../widgets/email.dart';
+import '../../../providers/admin_login_provider.dart';
 
-class AdminLoginPage extends StatelessWidget {
-  const AdminLoginPage({super.key});
+// Define the state provider
+final adminLoginProvider = ChangeNotifierProvider((ref) => AdminLoginProvider());
+
+class AdminLoginPage extends ConsumerStatefulWidget {
+  const AdminLoginPage({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<AdminLoginPage> createState() => _AdminLoginPageState();
+}
+
+class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ignore: deprecated_member_use
+    final adminLogin = ref.watch(adminLoginProvider);
+
+    ref.listen<AdminLoginProvider>(adminLoginProvider, (previous, next) {
+      if (!next.hasError && !next.isLoading) {
+        Navigator.pushReplacementNamed(context, '/admin');
+      }
+    });
+
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushNamed(context, '/');
-        return false; // Prevents the default behavior
+        return false;
       },
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Login',
+        appBar: AppBar(
+          title: const Text(
+            'Admin Login',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20
+              fontSize: 20,
             ),
           ),
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [const Center(
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Center(
                     child: Text(
                       'Welcome Back, Admin',
                       style: TextStyle(
@@ -40,47 +68,43 @@ class AdminLoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                    Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Not an Admin,',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13,
+                  const SizedBox(height: 20),
+                  EmailField(controller: _emailController), // Pass controller
+                  const SizedBox(height: 20),
+                  PasswordField(controller: _passwordController), // Pass controller
+                  const SizedBox(height: 20),
+                  if (adminLogin.errorMessage != null)
+                    Text(
+                      adminLogin.errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
-                      },
-                      child: const Text(
-                        'Click here',
-                        style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                    ),
-                    const EmailField(),
-                    const SizedBox(height: 20),
-                    const PasswordWidget(
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/admin');
-                      },
-                      child: const Text('Login', style:TextStyle(color: Colors.blueGrey)),
-                    ),
-                  ],
-                ),
+                  ElevatedButton(
+                    onPressed: adminLogin.isLoading
+                        ? null
+                        : () {
+                            adminLogin.login(
+                              _emailController.text, // Use the email entered by the user
+                              _passwordController.text, // Use the password entered by the user
+                            );
+                          },
+                    child: adminLogin.isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.blueGrey,
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(color: Colors.blueGrey),
+                          ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
+      ),
     );
   }
 }

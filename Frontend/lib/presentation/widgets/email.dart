@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+//import  '../../providers/auth_provider.dart';
 
-class EmailField extends StatefulWidget {
-  const EmailField({super.key});
+final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
 
-  @override
-  EmailFieldState createState() => EmailFieldState();
-}
-
-class EmailFieldState extends State<EmailField> {
-  final TextEditingController emailController = TextEditingController();
+class EmailFieldProvider extends ChangeNotifier {
+  final emailController = TextEditingController();
   bool _isValid = false;
+  String _email = "";
 
-  @override
-  void initState() {
-    super.initState();
-    emailController.addListener(_validateEmail);
+  String get email => _email;
+  bool get isValid => _isValid;
+
+  void setEmail(String email) {
+    _email = email;
+    _isValid = validateEmail(email);
+    notifyListeners();
+  }
+
+  bool validateEmail(String email) {
+    return email.isNotEmpty && email.contains('@') && email.contains('.');
+  }
+
+  void updateEmail(String email) {
+    _email = email;
+    _isValid = validateEmail(email);
+    notifyListeners();
   }
 
   @override
@@ -22,26 +33,22 @@ class EmailFieldState extends State<EmailField> {
     emailController.dispose();
     super.dispose();
   }
+}
 
-  void _validateEmail() {
-    final email = emailController.text.trim();
-    final isValid = email.isNotEmpty && email.contains('@') && email.contains('.');
-    setState(() {
-      _isValid = isValid;
-    });
-  }
+class EmailField extends ConsumerWidget {
+  final TextEditingController controller;
 
-  bool isSignUpEnabled() {
-    return _isValid;
-  }
+  const EmailField({Key? key, required this.controller}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.watch(emailFieldProvider.notifier);
+
     return Container(
       height: 57,
       padding: const EdgeInsets.all(1),
       child: TextField(
-        controller: emailController,
+        controller: controller,
         decoration: const InputDecoration(
           labelText: 'Email',
           labelStyle: TextStyle(
@@ -56,7 +63,7 @@ class EmailFieldState extends State<EmailField> {
           fontSize: 16,
           color: Colors.black,
         ),
-        onChanged: (_) => _validateEmail(),
+        onChanged: (value) => provider.updateEmail(value),
       ),
     );
   }

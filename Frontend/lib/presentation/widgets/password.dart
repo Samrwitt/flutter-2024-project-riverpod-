@@ -1,50 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PasswordWidget extends StatefulWidget {
-  const PasswordWidget({super.key});
+class PasswordFieldProvider extends ValueNotifier<bool> {
+  PasswordFieldProvider() : super(true);
 
-  @override
-  PasswordWidgetState createState() => PasswordWidgetState();
+  void toggleObscureText() {
+    value = !value;
+  }
 }
 
-class PasswordWidgetState extends State<PasswordWidget> {
-  bool obscureText = true;
+final passwordFieldProvider = ChangeNotifierProvider((ref) => PasswordFieldProvider());
+
+class PasswordField extends ConsumerWidget {
+  final TextEditingController controller; // Add this line
+
+  const PasswordField({Key? key, required this.controller}) : super(key: key); // Modify constructor
 
   @override
-  Widget build(BuildContext context) {
-    return Container(height: 57,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.watch(passwordFieldProvider);
+
+    return Container(
+      height: 57,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.blueGrey),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Center(
-        child: TextFormField(
-          obscureText: obscureText,
+        child: TextField(
+          controller: controller, // Use the passed controller
+          obscureText: provider.value,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             labelText: 'Password',
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
             border: InputBorder.none,
-            suffixIcon: TextButton(
-              onPressed: () {
-                setState(() {
-                  obscureText = !obscureText;
-                });
-              },
-              child: Icon(
-                obscureText ? Icons.visibility_off : Icons.visibility, color:Colors.blueGrey,
+            suffixIcon: IconButton(
+              onPressed: () => provider.toggleObscureText(),
+              icon: Icon(
+                provider.value ? Icons.visibility_off : Icons.visibility,
+                color: Colors.blueGrey,
               ),
             ),
           ),
           style: const TextStyle(
-              color: Colors.black,
-            ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a password';
-            }
-            return null;
-          },
+            color: Colors.black,
+          ),
         ),
       ),
     );

@@ -9,6 +9,7 @@ import 'package:digital_notebook/presentation/screens/login.dart';
 import 'package:digital_notebook/presentation/screens/signup.dart';
 import 'package:digital_notebook/presentation/screens/notes.dart';
 import 'package:digital_notebook/presentation/screens/others.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum ThemeModeOption {
   white,
@@ -18,7 +19,11 @@ enum ThemeModeOption {
 }
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -34,7 +39,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = buildThemeData();
-     // Build theme data dynamically
+
     return MaterialApp(
       themeMode: currentThemeMode == ThemeModeOption.dark
           ? ThemeMode.dark
@@ -44,19 +49,17 @@ class MyAppState extends State<MyApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomePage(),
-        '/admin': (context) => const AdminPage(),
-        'other': (context)=> const ViewOtherNotesPage(),
+        '/admin': (context) => AdminPage(),
+        '/other': (context) => ViewOtherNotesPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/notes': (context) => const Notepage(),
-        '/adminLogin':(context) =>const  AdminLoginPage(),
+        '/adminLogin': (context) => const AdminLoginPage(),
         '/adminNotes': (context) => AdminNotepage(
-            onNewNoteCreated: (note) {
-              // Do nothing
-            },
-            currentIndex: 0,
-          ),
-        '/adminOthers':(context)=> const AdminOthersPage(),
+          onNewNoteCreated: (note) {},
+          currentIndex: 0,
+        ),
+        '/adminOthers': (context) => const AdminOthersPage(),
       },
     );
   }
@@ -66,8 +69,8 @@ class MyAppState extends State<MyApp> {
       case ThemeModeOption.white:
         return ThemeData.light().copyWith(
           textTheme: ThemeData.light().textTheme.copyWith(
-        bodyText1: const TextStyle(fontFamily: 'Mate'),
-        bodyText2: const TextStyle(fontFamily: 'Mate'),
+            bodyLarge: const TextStyle(fontFamily: 'Mate'),
+            bodyMedium: const TextStyle(fontFamily: 'Mate'),
           ),
         );
       case ThemeModeOption.Sepia:
@@ -79,25 +82,25 @@ class MyAppState extends State<MyApp> {
             iconTheme: IconThemeData(color: Colors.grey),
           ),
           textTheme: const TextTheme(
-            bodyText1: TextStyle(color: Colors.grey, fontFamily: 'Mate'),
-            bodyText2: TextStyle(color: Colors.grey, fontFamily: 'Mate'),
+            bodyLarge: TextStyle(color: Colors.grey, fontFamily: 'Mate'),
+            bodyMedium: TextStyle(color: Colors.grey, fontFamily: 'Mate'),
           ),
           inputDecorationTheme: const InputDecorationTheme(
             labelStyle: TextStyle(color: Colors.white, fontFamily: 'Mate'),
             hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Mate'),
           ),
           bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-            backgroundColor:Color.fromARGB(255, 189, 148, 128), // Sepia color
+            backgroundColor: Color.fromARGB(255, 189, 148, 128), // Sepia color
             selectedItemColor: Colors.grey,
             unselectedItemColor: Colors.grey,
           ),
-          bottomAppBarTheme: const BottomAppBarTheme(color:Color.fromARGB(255, 189, 148, 128)), // Sepia color
+          bottomAppBarTheme: const BottomAppBarTheme(color: Color.fromARGB(255, 189, 148, 128)), // Sepia color
         );
       case ThemeModeOption.dark:
         return ThemeData.dark().copyWith(
           textTheme: ThemeData.light().textTheme.copyWith(
-        bodyText1: const TextStyle(fontFamily: 'Mate'),
-        bodyText2: const TextStyle(fontFamily: 'Mate'),
+            bodyLarge: const TextStyle(fontFamily: 'Mate'),
+            bodyMedium: const TextStyle(fontFamily: 'Mate'),
           ),
         );
     }

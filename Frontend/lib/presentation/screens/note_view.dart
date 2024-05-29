@@ -1,44 +1,44 @@
-import 'package:digital_notebook/models/note_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:digital_notebook/models/note_model.dart';
+//import 'package:digital_notebook/providers/notes_provider.dart';
 
-class NoteView extends StatefulWidget {
-  final Note note;
-  final int index;
-  final Function(Note) onNoteEdited;
-  final Function(int) onNoteDeleted;
+final currentlyEditedNoteProvider = StateProvider<Note>((ref) => throw UnimplementedError());
 
-  const NoteView(
-    // ignore: non_constant_identifier_names
-    {super.key, required this.note, required this.index, required this.onNoteEdited, required this.onNoteDeleted, required Function(int p1, String p2, String p3) Function});
+class NoteView extends ConsumerStatefulWidget {
+  const NoteView({Key? key}) : super(key: key);
 
   @override
-  NoteViewState createState() => NoteViewState();
+  _NoteViewState createState() => _NoteViewState();
 }
 
-class NoteViewState extends State<NoteView> {
+class _NoteViewState extends ConsumerState<NoteView> {
   late TextEditingController titleController;
   late TextEditingController bodyController;
 
   @override
   void initState() {
     super.initState();
-    titleController = TextEditingController(text: widget.note.title);
-    bodyController = TextEditingController(text: widget.note.body);
   }
 
   @override
   Widget build(BuildContext context) {
+    final note = ref.watch(currentlyEditedNoteProvider);
+
+    titleController = TextEditingController(text: note.title);
+    bodyController = TextEditingController(text: note.body);
+
     return Scaffold(
       appBar: AppBar(
         title: TextField(
-        controller: titleController,
-        style: const TextStyle(fontSize: 30.0, color: Colors.black),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: 'Title',
-          hintStyle: TextStyle(color: Colors.white.withAlpha(120)),
+          controller: titleController,
+          style: const TextStyle(fontSize: 30.0, color: Colors.black),
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: 'Title',
+            hintStyle: const TextStyle(color: Colors.white),
+          ),
         ),
-      ),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
@@ -48,36 +48,42 @@ class NoteViewState extends State<NoteView> {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     backgroundColor: Colors.grey[900],
-                    title: const Text("Delete Note ?",
-                    style: TextStyle(
-                      color:Colors.white,
-                    ),),
+                    title: const Text(
+                      "Delete Note ?",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
                     content: Text("Note '${titleController.text}' will be deleted!"),
-                    actions:[
+                    actions: [
                       TextButton(
-                        onPressed: (){
+                        onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: const Text("Cancel"),
                       ),
                       TextButton(
-                        onPressed: (){
-                          widget.onNoteDeleted(widget.index);
-                          Navigator.of(context).pop();
+                        onPressed: () {
+                          ref.read(currentlyEditedNoteProvider.notifier).state = Note(  title: titleController.text,
+                          body: bodyController.text,
+                          index: note.index,); // Reset the currently edited note
                           Navigator.of(context).pop();
                         },
                         child: const Text("Delete"),
                       ),
-                    ]
+                    ],
                   );
-                }
+                },
               );
             },
           ),
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () {
-              widget.note.title = titleController.text; widget.note.body = bodyController.text; widget.onNoteEdited(widget.note);
+              ref.read(currentlyEditedNoteProvider.notifier).state = note.copyWith(
+                title: titleController.text,
+                body: bodyController.text,
+              );
               Navigator.of(context).pop();
             },
           ),
@@ -88,18 +94,6 @@ class NoteViewState extends State<NoteView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TextField(
-            //   controller: titleController,
-            //   style: const TextStyle(
-            //     fontSize: 30, color:
-            //     Colors.black, fontWeight:
-            //     FontWeight.bold,
-            //     ),
-            //     decoration: const InputDecoration(
-            //       hintText: "Title",
-            //       border: InputBorder.none,
-            //     ),
-            // ),
             const SizedBox(height: 10,),
             TextField(
               controller: bodyController,
