@@ -10,10 +10,10 @@ import 'package:digital_notebook/presentation/screens/signup.dart';
 import 'package:digital_notebook/presentation/screens/notes.dart';
 import 'package:digital_notebook/presentation/screens/others.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:digital_notebook/providers/navigatorkey_provider.dart';
 
 enum ThemeModeOption {
   white,
-  // ignore: constant_identifier_names
   Sepia,
   dark,
 }
@@ -26,21 +26,24 @@ void main() {
   );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  MyAppState createState() => MyAppState();
+  ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class MyAppState extends State<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> {
   ThemeModeOption currentThemeMode = ThemeModeOption.white;
 
   @override
   Widget build(BuildContext context) {
+    final navigatorKey = ref.watch(navigatorKeyProvider);
+
     ThemeData themeData = buildThemeData();
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       themeMode: currentThemeMode == ThemeModeOption.dark
           ? ThemeMode.dark
           : ThemeMode.light,
@@ -98,7 +101,7 @@ class MyAppState extends State<MyApp> {
         );
       case ThemeModeOption.dark:
         return ThemeData.dark().copyWith(
-          textTheme: ThemeData.light().textTheme.copyWith(
+          textTheme: ThemeData.dark().textTheme.copyWith(
             bodyLarge: const TextStyle(fontFamily: 'Mate'),
             bodyMedium: const TextStyle(fontFamily: 'Mate'),
           ),

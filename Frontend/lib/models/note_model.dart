@@ -7,8 +7,8 @@
 // }
 class Note {
   final int index;
-  final String title;
-  final String body;
+   String title;
+   String body;
 
   Note({
     required this.title,

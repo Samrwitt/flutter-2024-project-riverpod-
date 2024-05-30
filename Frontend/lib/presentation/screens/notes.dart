@@ -62,21 +62,38 @@ class _Notepage extends ConsumerWidget {
         ),
         body: TabBarView(
           children: [
+            // ListView.builder(
+            //   itemCount: notes.length,
+            //   itemBuilder: (context, index) {
+            //     return NotesCard(
+            //       note: notes[index],
+            //       index: index,
+            //       // Provide required arguments for onNoteDeleted and onNoteEdited
+            //       onNoteDeleted: (index) => ref.read(providers.notesProvider.notifier).deleteNote(index), // Use prefixed import
+            //       onNoteEdited: (note) {
+            //         ref.read(providers.notesProvider.notifier).editNoteTitle(note.index, note.title); // Use prefixed import
+            //         ref.read(providers.notesProvider.notifier).editNoteBody(note.index, note.body); // Use prefixed import
+            //       },
+            //     );
+            //   },
+            // ),
             ListView.builder(
-              itemCount: notes.length,
-              itemBuilder: (context, index) {
-                return NotesCard(
-                  note: notes[index],
-                  index: index,
-                  // Provide required arguments for onNoteDeleted and onNoteEdited
-                  onNoteDeleted: (index) => ref.read(providers.notesProvider.notifier).deleteNote(index), // Use prefixed import
-                  onNoteEdited: (note) {
-                    ref.read(providers.notesProvider.notifier).editNoteTitle(note.index, note.title); // Use prefixed import
-                    ref.read(providers.notesProvider.notifier).editNoteBody(note.index, note.body); // Use prefixed import
-                  },
-                );
-              },
-            ),
+  itemCount: notes.length,
+  itemBuilder: (context, index) {
+    return NotesCard(
+      note: notes[index],
+      index: index,
+      onNoteDeleted: (index) => ref.read(providers.notesProvider.notifier).deleteNote(index),
+      onNoteTitleEdited: (note) {
+        ref.read(providers.notesProvider.notifier).editNoteTitle(note.index, note.title);
+      },
+      onNoteBodyEdited: (note) {
+        ref.read(providers.notesProvider.notifier).editNoteBody(note.index, note.body);
+      },
+    );
+  },
+),
+
             others.ViewOtherNotesPage(), // Use prefixed import
           ],
         ),

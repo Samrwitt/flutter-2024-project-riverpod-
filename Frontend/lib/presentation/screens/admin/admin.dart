@@ -5,7 +5,6 @@ import 'adminOthers.dart';
 import 'adminNotes.dart';
 import '../../../providers/activities_provider.dart';
 
-
 class AdminPage extends ConsumerStatefulWidget {
   const AdminPage({super.key});
 
@@ -150,6 +149,7 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
   void _showEditActivityDialog(BuildContext context, int index) {
     final editUserController = TextEditingController(text: ref.read(activitiesProvider)[index].user);
     final editActivityController = TextEditingController(text: ref.read(activitiesProvider)[index].name);
+    DateTime selectedEditDateTime = DateTime.parse('${ref.read(activitiesProvider)[index].date} ${ref.read(activitiesProvider)[index].time.padLeft(5, '0')}:00');
 
     showDialog(
       context: context,
@@ -169,13 +169,46 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
                 decoration: const InputDecoration(labelText: 'Activity'),
                 style: const TextStyle(color: Colors.black),
               ),
+              ElevatedButton(
+                onPressed: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: selectedEditDateTime,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2101),
+                  );
+
+                  if (pickedDate != null) {
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(selectedEditDateTime),
+                    );
+
+                    if (pickedTime != null) {
+                      selectedEditDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                      );
+                    }
+                  }
+                },
+                child: const Text('Select Date and Time'),
+              ),
             ],
           ),
           actions: [
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _editActivity(index, editUserController.text, editActivityController.text);
+                _editActivity(
+                  index,
+                  editUserController.text,
+                  editActivityController.text,
+                  selectedEditDateTime,
+                );
               },
               child: const Text('Save'),
             ),
@@ -191,13 +224,12 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
     );
   }
 
-  void _editActivity(int index, String newUser, String newName) {
-    final selectedActivity = ref.read(activitiesProvider)[index];
+  void _editActivity(int index, String newUser, String newName, DateTime newDateTime) {
     ref.read(activitiesProvider.notifier).editActivity(
       index,
       newUser,
       newName,
-      DateTime.parse('${selectedActivity.date} ${selectedActivity.time.padLeft(5, '0')}:00'),
+      newDateTime,
     );
   }
 }
