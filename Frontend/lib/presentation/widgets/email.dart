@@ -6,7 +6,7 @@ final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider())
 
 class EmailFieldProvider extends ChangeNotifier {
   final emailController = TextEditingController();
-  bool _isValid = false;
+  bool _isValid = true;
   String _email = "";
 
   String get email => _email;

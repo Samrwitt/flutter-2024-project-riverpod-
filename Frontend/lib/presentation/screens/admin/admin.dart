@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add_activity_dialog.dart';
 import 'adminOthers.dart';
 import 'adminNotes.dart';
+import '../../widgets/admin_avatar.dart';
 import '../../../providers/activities_provider.dart';
 
 class AdminPage extends ConsumerStatefulWidget {
@@ -35,7 +36,22 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin', style: TextStyle(fontSize: 25)),
+        title: const Text('Admin', style: TextStyle(fontSize: 25)), actions: <Widget>[
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/adminlogin');
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Center(
+                    child: AdminCircleAvatarWidget(),
+                  ),
+                ),
+              ),
+            ),
+          ],
       ),
       body: TabBarView(
         controller: _tabController,

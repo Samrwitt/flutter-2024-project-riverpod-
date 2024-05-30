@@ -1,7 +1,10 @@
 // ignore_for_file: deprecated_member_use
+import 'package:digital_notebook/presentation/screens/update_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:digital_notebook/presentation/screens/home.dart';
+import 'package:digital_notebook/presentation/screens/update_profile.dart';
 import 'package:digital_notebook/presentation/screens/admin/admin.dart';
+import 'package:digital_notebook/presentation/screens/admin/manage_users.dart';
 import 'package:digital_notebook/presentation/screens/admin/adminLogin.dart';
 import 'package:digital_notebook/presentation/screens/admin/adminNotes.dart';
 import 'package:digital_notebook/presentation/screens/admin/adminOthers.dart';
@@ -63,6 +66,8 @@ class _MyAppState extends ConsumerState<MyApp> {
           currentIndex: 0,
         ),
         '/adminOthers': (context) => const AdminOthersPage(),
+        "/updateProfile":(context)=> const UpdateProfilePage(),
+        '/manageUsers': (context) => const ManageUsersPage(),
       },
     );
   }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import "package:digital_notebook/providers/navigatorkey_provider.dart";
-import "package:digital_notebook/providers/logout_provider.dart";
+import 'package:digital_notebook/providers/navigatorkey_provider.dart';
+import 'package:digital_notebook/providers/logout_provider.dart';
+import 'package:digital_notebook/providers/user_provider.dart';
 
 // Provider for handling the logout functionality
 final logoutProvider = Provider.autoDispose((ref) {
@@ -26,11 +27,6 @@ final updateProfileProvider = Provider.autoDispose((ref) {
   };
 });
 
-// Mock user data provider
-final userProvider = Provider.autoDispose((ref) {
-  return "Username"; // Replace with actual user data fetching logic
-});
-
 class CircleAvatarWidget extends ConsumerWidget {
   const CircleAvatarWidget({Key? key}) : super(key: key);
 
@@ -39,18 +35,18 @@ class CircleAvatarWidget extends ConsumerWidget {
     final logout = ref.watch(logoutProvider);
     final deleteAccount = ref.watch(deleteAccountProvider);
     final updateProfile = ref.watch(updateProfileProvider);
-    final username = ref.watch(userProvider);
+    final user = ref.watch(userProvider);
 
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext context) {
         return [
           PopupMenuItem<String>(
-            value: 'username',
+            value: 'email',
             child: Text(
-              username,
+              user.email,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            enabled: false, // This item is just a display for username
+            enabled: false, // This item is just a display for the email
           ),
           const PopupMenuDivider(),
           const PopupMenuItem<String>(
