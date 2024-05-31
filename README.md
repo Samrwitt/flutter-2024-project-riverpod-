@@ -14,7 +14,7 @@ This project aims to develop a Flutter application that is Organizational notes 
    - Users will have the ability to create, edit, read and delete the notes
 - Log activity tracking feature
    -This will be a feature that can be accessed by the admin role only.
-   - An admin can manually add activity logs that won't be added automatically by the application. An admin can also read those logs and edit and delete them when needed.
+   - An admin can manually add activity logs. An admin can also read those logs and edit and delete them when needed.
 
 | Name            | ID          |
 |-------------- |-------------|
