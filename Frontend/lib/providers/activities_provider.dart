@@ -1,6 +1,6 @@
 import 'package:digital_notebook/models/activity_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/note_model.dart';
+//import '../models/note_model.dart';
 
 final activitiesProvider = StateNotifierProvider<ActivitiesNotifier, List<Activity>>((ref) => ActivitiesNotifier());
 

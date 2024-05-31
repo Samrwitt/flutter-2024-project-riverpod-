@@ -36,22 +36,23 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin', style: TextStyle(fontSize: 25)), actions: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/adminlogin');
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Center(
-                    child: AdminCircleAvatarWidget(),
-                  ),
+        title: const Text('Admin', style: TextStyle(fontSize: 25)),
+        actions: <Widget>[
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/adminlogin');
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Center(
+                  child: AdminCircleAvatarWidget(),
                 ),
               ),
             ),
-          ],
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -110,9 +111,6 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
           ),
           // Notes page content
           AdminNotepage(
-            onNewNoteCreated: (note) {
-              // do Nothing
-            },
             currentIndex: 0,
           ),
           // Other People page content
@@ -163,78 +161,90 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
   }
 
   void _showEditActivityDialog(BuildContext context, int index) {
-    final editUserController = TextEditingController(text: ref.read(activitiesProvider)[index].user);
-    final editActivityController = TextEditingController(text: ref.read(activitiesProvider)[index].name);
-    DateTime selectedEditDateTime = DateTime.parse('${ref.read(activitiesProvider)[index].date} ${ref.read(activitiesProvider)[index].time.padLeft(5, '0')}:00');
+    final activity = ref.read(activitiesProvider)[index];
+    final editUserController = TextEditingController(text: activity.user);
+    final editActivityController = TextEditingController(text: activity.name);
+    DateTime selectedEditDateTime;
+    try {
+      selectedEditDateTime = DateTime.parse('${activity.date} ${activity.time.padLeft(5, '0')}:00');
+    } catch (e) {
+      selectedEditDateTime = DateTime.now();
+    }
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Activity'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: editUserController,
-                decoration: const InputDecoration(labelText: 'User'),
-                style: const TextStyle(color: Colors.black),
-              ),
-              TextField(
-                controller: editActivityController,
-                decoration: const InputDecoration(labelText: 'Activity'),
-                style: const TextStyle(color: Colors.black),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: selectedEditDateTime,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-
-                  if (pickedDate != null) {
-                    final TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.fromDateTime(selectedEditDateTime),
-                    );
-
-                    if (pickedTime != null) {
-                      selectedEditDateTime = DateTime(
-                        pickedDate.year,
-                        pickedDate.month,
-                        pickedDate.day,
-                        pickedTime.hour,
-                        pickedTime.minute,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text('Edit Activity'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: editUserController,
+                    decoration: const InputDecoration(labelText: 'User'),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  TextField(
+                    controller: editActivityController,
+                    decoration: const InputDecoration(labelText: 'Activity'),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: selectedEditDateTime,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
                       );
-                    }
-                  }
-                },
-                child: const Text('Select Date and Time'),
+
+                      if (pickedDate != null) {
+                        final TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(selectedEditDateTime),
+                        );
+
+                        if (pickedTime != null) {
+                          setState(() {
+                            selectedEditDateTime = DateTime(
+                              pickedDate.year,
+                              pickedDate.month,
+                              pickedDate.day,
+                              pickedTime.hour,
+                              pickedTime.minute,
+                            );
+                          });
+                        }
+                      }
+                    },
+                    child: const Text('Select Date and Time'),
+                  ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _editActivity(
-                  index,
-                  editUserController.text,
-                  editActivityController.text,
-                  selectedEditDateTime,
-                );
-              },
-              child: const Text('Save'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _editActivity(
+                      index,
+                      editUserController.text,
+                      editActivityController.text,
+                      selectedEditDateTime,
+                    );
+                  },
+                  child: const Text('Save'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

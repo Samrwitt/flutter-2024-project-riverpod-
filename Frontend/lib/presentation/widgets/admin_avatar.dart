@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:digital_notebook/providers/navigatorkey_provider.dart';
-import 'package:digital_notebook/providers/logout_provider.dart';
-import 'package:digital_notebook/providers/manage_users_provider.dart'; // Import the provider for managing users
+//import 'package:digital_notebook/providers/logout_provider.dart';
+//import 'package:digital_notebook/providers/manage_users_provider.dart'; // Import the provider for managing users
 
 // Provider for handling the logout functionality for admin
 final LogoutProvider = Provider.autoDispose((ref) {
@@ -17,7 +17,7 @@ class AdminCircleAvatarWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Logout = ref.watch(LogoutProvider);
-    final manageUsers = ref.watch(manageUsersProvider);
+    //final manageUsers = ref.watch(manageUsersProvider);
 
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext context) {

@@ -2,7 +2,7 @@
 import 'package:digital_notebook/presentation/screens/update_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:digital_notebook/presentation/screens/home.dart';
-import 'package:digital_notebook/presentation/screens/update_profile.dart';
+//import 'package:digital_notebook/presentation/screens/update_profile.dart';
 import 'package:digital_notebook/presentation/screens/admin/admin.dart';
 import 'package:digital_notebook/presentation/screens/admin/manage_users.dart';
 import 'package:digital_notebook/presentation/screens/admin/adminLogin.dart';
@@ -62,7 +62,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/notes': (context) => const Notepage(),
         '/adminLogin': (context) => const AdminLoginPage(),
         '/adminNotes': (context) => AdminNotepage(
-          onNewNoteCreated: (note) {},
+          //onNewNoteCreated: (note) {},
           currentIndex: 0,
         ),
         '/adminOthers': (context) => const AdminOthersPage(),

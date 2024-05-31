@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:digital_notebook/presentation/widgets/email.dart';
+//import 'package:digital_notebook/presentation/widgets/email.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Define the state provider for authentication
