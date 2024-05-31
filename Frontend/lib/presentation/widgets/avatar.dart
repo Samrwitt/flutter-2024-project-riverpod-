@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/providers/user_provider.dart';
+import 'package:digital_notebook/application/providers/user_provider.dart';
 
 // Provider for handling the logout functionality
 final logoutProvider = Provider.autoDispose<void Function(BuildContext)>((ref) {

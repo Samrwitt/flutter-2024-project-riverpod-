@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:digital_notebook/models/note_model.dart';
+import 'package:digital_notebook/data/models/note_model.dart';
 
 // Provider for the list of notes
 final notesProvider =

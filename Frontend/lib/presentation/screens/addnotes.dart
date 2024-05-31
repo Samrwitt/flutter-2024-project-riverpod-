@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:digital_notebook/models/note_model.dart';
+import 'package:digital_notebook/data/models/note_model.dart';
 import 'package:go_router/go_router.dart';
 
 class AddNote extends StatefulWidget {

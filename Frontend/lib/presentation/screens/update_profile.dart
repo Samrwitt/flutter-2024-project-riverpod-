@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/user_provider.dart';
+import '../../application/providers/user_provider.dart';
 
 class UpdateProfilePage extends ConsumerStatefulWidget {
   const UpdateProfilePage({Key? key}) : super(key: key);
@@ -11,7 +11,7 @@ class UpdateProfilePage extends ConsumerStatefulWidget {
 }
 
 class _UpdateProfilePageState extends ConsumerState<UpdateProfilePage> {
-  late TextEditingController usernameController;
+  late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController passwordController;
 
@@ -19,14 +19,14 @@ class _UpdateProfilePageState extends ConsumerState<UpdateProfilePage> {
   void initState() {
     super.initState();
     final user = ref.read(userProvider);
-    usernameController = TextEditingController(text: user.username);
+    nameController = TextEditingController(text: user.name);
     emailController = TextEditingController(text: user.email);
     passwordController = TextEditingController(text: user.password);
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
+    nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -43,8 +43,8 @@ class _UpdateProfilePageState extends ConsumerState<UpdateProfilePage> {
         child: Column(
           children: [
             TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'name'),
             ),
             TextField(
               controller: emailController,
@@ -60,7 +60,7 @@ class _UpdateProfilePageState extends ConsumerState<UpdateProfilePage> {
               onPressed: () {
                 ref
                     .read(userProvider.notifier)
-                    .updateUsername(usernameController.text);
+                    .updatename(nameController.text);
                 ref
                     .read(userProvider.notifier)
                     .updateEmail(emailController.text);

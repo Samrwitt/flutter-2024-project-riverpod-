@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:digital_notebook/models/user_model.dart'; // Import your User model
+import 'package:digital_notebook/data/models/user_model.dart'; // Import your User model
 
 // Simulated user data
 final List<User> _dummyUsers = [
-  User(id: '1', username: 'User1', email: 'user1@example.com'),
-  User(id: '2', username: 'User2', email: 'user2@example.com'),
+  User(id: '1', name: 'User1', email: 'user1@example.com'),
+  User(id: '2', name: 'User2', email: 'user2@example.com'),
 ];
 
 // StateNotifier for managing users

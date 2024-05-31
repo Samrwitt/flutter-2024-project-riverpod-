@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/activity_model.dart';
+import '../../data/models/activity_model.dart';
 
 final activitiesProvider =
     StateNotifierProvider<ActivitiesNotifier, List<Activity>>(

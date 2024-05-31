@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:digital_notebook/models/note_model.dart';
+import 'package:digital_notebook/data/models/note_model.dart';
 
 class NotesCard extends ConsumerWidget {
   final Note note;

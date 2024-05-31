@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../providers/notes_provider.dart';
+import '../../../application/providers/notes_provider.dart';
 
 class AdminOthersPage extends ConsumerWidget {
   const AdminOthersPage({super.key});

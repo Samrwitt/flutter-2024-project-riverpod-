@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { UsersService } from './users/users.service';
 import { Role } from './roles/role.enum';
-const port= 5001;
+const port= 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{cors:true});

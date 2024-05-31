@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/providers/logout_provider.dart';
-import 'package:digital_notebook/providers/manage_users_provider.dart';
+import 'package:digital_notebook/application/providers/logout_provider.dart';
+import 'package:digital_notebook/application/providers/manage_users_provider.dart';
 
 class ManageUsersPage extends ConsumerWidget {
   const ManageUsersPage({Key? key});
@@ -26,7 +26,7 @@ class ManageUsersPage extends ConsumerWidget {
         data: (users) => ListView.builder(
           itemCount: users.length,
           itemBuilder: (_, index) => ListTile(
-            title: Text(users[index].username),
+            title: Text(users[index].name),
             subtitle: Text(users[index].email),
             trailing: IconButton(
               icon: const Icon(Icons.delete),

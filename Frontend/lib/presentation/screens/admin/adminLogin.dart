@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/password.dart';
 import '../../widgets/email.dart';
-import '../../../providers/admin_login_provider.dart';
+import '../../../application/providers/admin_login_provider.dart';
 import 'package:go_router/go_router.dart';
 
 // Define the state provider

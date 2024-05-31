@@ -11,9 +11,10 @@ import 'package:digital_notebook/presentation/screens/login.dart';
 import 'package:digital_notebook/presentation/screens/signup.dart';
 import 'package:digital_notebook/presentation/screens/notes.dart';
 import 'package:digital_notebook/presentation/screens/addnotes.dart';
+import 'package:digital_notebook/presentation/widgets/page_selector.dart';
 import 'package:digital_notebook/presentation/screens/update_profile.dart';
-import 'package:digital_notebook/providers/navigatorkey_provider.dart';
-import 'package:digital_notebook/providers/user_provider.dart'
+import 'package:digital_notebook/application/providers/navigatorkey_provider.dart';
+import 'package:digital_notebook/application/providers/user_provider.dart'
     as user_prov; // Use alias to avoid ambiguity
 
 void main() {
@@ -42,11 +43,20 @@ class _MyAppState extends ConsumerState<MyApp> {
         GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
         GoRoute(
             path: '/signup', builder: (context, state) => const SignupPage()),
-        GoRoute(
-            path: '/notes',
-            builder: (context, state) => const Notepage(
-                  userId: '',
-                )),
+        // GoRoute(
+        //     path: '/notes',
+        //     builder: (context, state) => const Notepage(
+        //           userId: '',
+        //         )),
+  GoRoute(
+  path: '/notes',
+  builder: (context, state) {
+    final user = ref.watch(user_prov.userProvider);
+    return user.id.isNotEmpty
+        ? Notepage(userId: user.id)
+        : const PageSelector(); // PageSelector is a custom widget to select between login and signup pages
+  },
+),
         GoRoute(
           path: '/addNote',
           builder: (context, state) {
@@ -126,7 +136,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                 bodyColor: const Color.fromARGB(255, 0, 0, 0),
                 displayColor: const Color.fromARGB(255, 0, 0, 0),
               ),
-        );
+        );           
       case ThemeModeOption.dark:
         return ThemeData.dark().copyWith(
           textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Mate'),

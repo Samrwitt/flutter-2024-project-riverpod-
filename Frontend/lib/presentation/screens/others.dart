@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/providers/ui_provider.dart';
-import 'package:digital_notebook/providers/notes_provider.dart';
+import 'package:digital_notebook/application/providers/ui_provider.dart';
+import 'package:digital_notebook/application/providers/notes_provider.dart';
 import 'package:digital_notebook/presentation/widgets/email.dart';
 
 final emailFieldProvider =

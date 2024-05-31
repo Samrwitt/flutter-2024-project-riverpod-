@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/note_model.dart';
-import '../../providers/notes_provider.dart' as providers;
+import '../../data/models/note_model.dart';
+import '../../application/providers/notes_provider.dart' as providers;
 import '../widgets/note_card.dart';
 import 'others.dart' as others;
 import 'package:digital_notebook/presentation/widgets/avatar.dart';

@@ -3,8 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/ui_provider.dart';
+import '../../application/providers/auth_provider.dart';
+import '../../application/providers/ui_provider.dart';
 import '../widgets/email.dart';
 import '../widgets/password.dart';
 
@@ -29,12 +29,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = ref.watch(authProviderProvider);
-    final uiProvider = ref.watch(uiProviderProvider);
 
     ref.listen<AuthProvider>(authProviderProvider, (previous, next) {
       if (!next.hasError && !next.isLoading) {
-        context
-            .go('/notes'); // Navigate to the notes page if login is successful
+        context.go('/notes'); // Navigate to the notes page if login is successful
       }
     });
 
@@ -93,8 +91,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  context
-                                      .push('/signup'); // GoRouter navigation
+                                  context.push('/signup'); // GoRouter navigation
                                 },
                             )
                           ],
@@ -129,12 +126,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onPressed: authProvider.isLoading
                         ? null
                         : () async {
-                            authProvider.setEmail(_emailController.text.trim());
-                            authProvider
-                                .setPassword(_passwordController.text.trim());
                             await authProvider.loginUser(
                                 _emailController.text.trim(),
-                                _passwordController.text.trim());
+                                _passwordController.text.trim(),
+                                context);
                           },
                     child: authProvider.isLoading
                         ? const CircularProgressIndicator()
@@ -143,9 +138,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             style: TextStyle(color: Colors.blueGrey),
                           ),
                   ),
-                  if (authProvider.error != null)
+                  if (authProvider.hasError)
                     Text(
-                      authProvider.error!,
+                      authProvider.error,
                       style: const TextStyle(color: Colors.red),
                     ),
                 ],

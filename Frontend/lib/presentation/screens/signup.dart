@@ -4,12 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/gestures.dart';
 import '../widgets/email.dart';
 import '../widgets/password.dart';
-import '../../providers/auth_provider.dart';
-import '../../providers/ui_provider.dart';
+import '../../application/providers/auth_provider.dart';
 
-final emailFieldProvider =
-    ChangeNotifierProvider((ref) => EmailFieldProvider());
-final uiProviderProvider = ChangeNotifierProvider((ref) => UIProvider());
+final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
 
 class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({Key? key}) : super(key: key);
@@ -19,13 +16,13 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -34,12 +31,10 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = ref.watch(authProviderProvider);
-    final emailField = ref.watch(emailFieldProvider);
 
     ref.listen<AuthProvider>(authProviderProvider, (previous, next) {
       if (!next.hasError && !next.isLoading) {
-        context
-            .go('/notes'); // Navigate to the notes page if signup is successful
+        context.go('/notes');
       }
     });
 
@@ -83,7 +78,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                context.go('/login'); // GoRouter navigation
+                                context.go('/login');
                               },
                           ),
                         ],
@@ -93,9 +88,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  controller: _usernameController,
+                  controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Username',
+                    labelText: 'name',
                     labelStyle: TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blueGrey),
@@ -104,20 +99,22 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 const SizedBox(height: 10),
                 EmailField(
-                    controller: _emailController), // Custom email field widget
+                  controller: _emailController,
+                ),
                 const SizedBox(height: 10),
                 PasswordField(
-                    controller:
-                        _passwordController), // Custom password field widget
+                  controller: _passwordController,
+                ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: authProvider.isLoading
                       ? null
                       : () async {
-                          await authProvider.signupUser(
-                            _usernameController.text.trim(),
+                          await authProvider.registerUser(
+                            _nameController.text.trim(),
                             _emailController.text.trim(),
                             _passwordController.text.trim(),
+                            context,
                           );
                         },
                   style: ElevatedButton.styleFrom(
@@ -134,9 +131,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           style: TextStyle(color: Colors.blueGrey),
                         ),
                 ),
-                if (authProvider.error != null)
+                if (authProvider.hasError)
                   Text(
-                    authProvider.error!,
+                    authProvider.error,
                     style: const TextStyle(color: Colors.red),
                   ),
               ],
