@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -66,34 +67,22 @@ class HomePage extends StatelessWidget {
             left: 50,
             right: 50,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signup');
-              },
+              onPressed: () => context.push('/signup'), // Using GoRouter for navigation
               style: ButtonStyle(
-                minimumSize: MaterialStateProperty.all<Size>(const Size(150, 50)), // Adjusted button size
-                backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.pressed)) {
-                      return Colors.blueGrey.withOpacity(0.9);
-                    }
-                    return Colors.white; // Use white color as the default button color
-                  },
-                ),
+                backgroundColor: MaterialStateProperty.all(Colors.white),
                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(180),
-                    side: const BorderSide(color: Colors.blueGrey, width: 2), // Red border, adjusted width
+                    side: const BorderSide(color: Colors.blueGrey, width: 2),
                   ),
                 ),
-                elevation: MaterialStateProperty.all<double>(5), // Increased elevation
-                shadowColor: MaterialStateProperty.all<Color>(Colors.grey.withOpacity(0.5)), // Shadow color
               ),
               child: const Text(
                 'Register Here',
                 style: TextStyle(
                   color: Colors.black,
+                  fontSize: 18,
                   fontWeight: FontWeight.w400,
-                  fontSize: 18, // Black text color
                 ),
               ),
             ),
@@ -119,9 +108,7 @@ class HomePage extends StatelessWidget {
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.pushNamed(context, '/adminLogin');
-                          },
+                          ..onTap = () => context.push('/adminLogin'), // Using GoRouter
                       ),
                       const TextSpan(
                         text: " for Admin",

@@ -1,22 +1,22 @@
+import 'package:digital_notebook/models/activity_model.dart';
+import 'package:digital_notebook/presentation/widgets/admin_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:digital_notebook/providers/activities_provider.dart';
 import 'add_activity_dialog.dart';
 import 'adminOthers.dart';
 import 'adminNotes.dart';
-import '../../widgets/admin_avatar.dart';
-import '../../../providers/activities_provider.dart';
 
 class AdminPage extends ConsumerStatefulWidget {
-  const AdminPage({super.key});
+  const AdminPage({Key? key}) : super(key: key);
 
   @override
   ConsumerState<AdminPage> createState() => _AdminPageState();
 }
 
-class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProviderStateMixin {
-  TextEditingController activityController = TextEditingController();
-  TextEditingController userController = TextEditingController();
-  DateTime? _selectedDateTime;
+class _AdminPageState extends ConsumerState<AdminPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -27,7 +27,9 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
   }
 
   void _handleTabSelection() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -36,104 +38,65 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin', style: TextStyle(fontSize: 25)),
-        actions: <Widget>[
-          GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/adminlogin');
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Center(
-                  child: AdminCircleAvatarWidget(),
-                ),
-              ),
-            ),
-          ),
+        title: const Text('Admin Dashboard'),
+        actions: [
+          const AdminCircleAvatarWidget(), // Using the avatar widget
         ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Current page content (AdminHomePage)
-          ListView.builder(
-            itemCount: activities.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Column(
-                children: [
-                  ListTile(
-                    title: Text(activities[index].name),
-                    subtitle: Text(
-                      'User: ${activities[index].user}, Date: ${activities[index].date}, Time: ${activities[index].time}',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            _showEditActivityDialog(context, index);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            ref.read(activitiesProvider.notifier).deleteActivity(index);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (activities[index].logs.isNotEmpty) ...[
-                    const Text(
-                      'Logs:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Column(
-                      children: activities[index]
-                          .logs
-                          .map((log) => Text(
-                                log,
-                                textAlign: TextAlign.center,
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  const Divider(),
-                ],
-              );
-            },
-          ),
-          // Notes page content
-          AdminNotepage(
-            currentIndex: 0,
-          ),
-          // Other People page content
+          _buildActivitiesList(context, activities),
+          const AdminNotepage(currentIndex: 0, userId: 'specified-user-id'),
           const AdminOthersPage(),
         ],
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton(
-              onPressed: () {
-                _showAddActivityDialog(context);
-              },
-              backgroundColor: Colors.blueGrey,
-              child: const Icon(Icons.add, color: Colors.white),
+              onPressed: () => _showAddActivityDialog(context),
+              backgroundColor: Color.fromARGB(255, 76, 109, 125),
+              child: const Icon(Icons.add),
             )
           : null,
-      bottomNavigationBar: TabBar(
-        controller: _tabController,
-        tabs: const [
-          Tab(icon: Icon(Icons.history, color: Colors.blueGrey), text: 'History'),
-          Tab(icon: Icon(Icons.notes, color: Colors.blueGrey), text: 'Notes'),
-          Tab(icon: Icon(Icons.people_alt, color: Colors.blueGrey), text: "Other's Notes"),
-        ],
+      bottomNavigationBar: Material(
+        color: Theme.of(context).primaryColor,
+        child: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.history), text: 'Activities'),
+            Tab(icon: Icon(Icons.note), text: 'Notes'),
+            Tab(icon: Icon(Icons.people), text: "Other's Notes"),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildActivitiesList(BuildContext context, List<Activity> activities) {
+    return ListView.builder(
+      itemCount: activities.length,
+      itemBuilder: (context, index) {
+        final activity = activities[index];
+        return ListTile(
+          title: Text(activity.name),
+          subtitle: Text(
+              'User: ${activity.user}, Date: ${activity.date}, Time: ${activity.time}'),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => _showEditActivityDialog(context, index),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () =>
+                    ref.read(activitiesProvider.notifier).deleteActivity(index),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -142,22 +105,18 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
       context: context,
       builder: (BuildContext context) {
         return AddActivityDialog(
-          userController: userController,
-          activityController: activityController,
-          selectedDateTime: _selectedDateTime,
-          onAddActivity: (user, activity, dateTime) {
-            _addActivity(user, activity, dateTime);
-          },
-          onCloseDialog: () {
+          userController: TextEditingController(),
+          activityController: TextEditingController(),
+          selectedDateTime: DateTime.now(),
+          onAddActivity: (String user, String activity, DateTime dateTime) {
+            ref
+                .read(activitiesProvider.notifier)
+                .addActivity(user, activity, dateTime);
             Navigator.of(context).pop();
           },
         );
       },
     );
-  }
-
-  void _addActivity(String user, String activityName, DateTime dateTime) {
-    ref.read(activitiesProvider.notifier).addActivity(user, activityName, dateTime);
   }
 
   void _showEditActivityDialog(BuildContext context, int index) {
@@ -166,7 +125,8 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
     final editActivityController = TextEditingController(text: activity.name);
     DateTime selectedEditDateTime;
     try {
-      selectedEditDateTime = DateTime.parse('${activity.date} ${activity.time.padLeft(5, '0')}:00');
+      selectedEditDateTime = DateTime.parse(
+          '${activity.date} ${activity.time.padLeft(5, '0')}:00');
     } catch (e) {
       selectedEditDateTime = DateTime.now();
     }
@@ -184,12 +144,14 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
                   TextField(
                     controller: editUserController,
                     decoration: const InputDecoration(labelText: 'User'),
-                    style: const TextStyle(color: Colors.black),
+                    style: const TextStyle(
+                        color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                   TextField(
                     controller: editActivityController,
                     decoration: const InputDecoration(labelText: 'Activity'),
-                    style: const TextStyle(color: Colors.black),
+                    style: const TextStyle(
+                        color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                   ElevatedButton(
                     onPressed: () async {
@@ -203,7 +165,8 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
                       if (pickedDate != null) {
                         final TimeOfDay? pickedTime = await showTimePicker(
                           context: context,
-                          initialTime: TimeOfDay.fromDateTime(selectedEditDateTime),
+                          initialTime:
+                              TimeOfDay.fromDateTime(selectedEditDateTime),
                         );
 
                         if (pickedTime != null) {
@@ -250,12 +213,13 @@ class _AdminPageState extends ConsumerState<AdminPage> with SingleTickerProvider
     );
   }
 
-  void _editActivity(int index, String newUser, String newName, DateTime newDateTime) {
+  void _editActivity(
+      int index, String newUser, String newName, DateTime newDateTime) {
     ref.read(activitiesProvider.notifier).editActivity(
-      index,
-      newUser,
-      newName,
-      newDateTime,
-    );
+          index,
+          newUser,
+          newName,
+          newDateTime,
+        );
   }
 }

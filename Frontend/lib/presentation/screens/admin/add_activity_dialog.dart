@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/gestures.dart';
+import 'package:go_router/go_router.dart';
 
 class AddActivityDialog extends StatelessWidget {
   final TextEditingController userController;
   final TextEditingController activityController;
-  final DateTime? selectedDateTime;
+  final DateTime selectedDateTime;
   final Function(String, String, DateTime) onAddActivity;
-  final VoidCallback onCloseDialog;
 
   const AddActivityDialog({
     Key? key,
     required this.userController,
     required this.activityController,
-    this.selectedDateTime,
+    required this.selectedDateTime,
     required this.onAddActivity,
-    required this.onCloseDialog,
   }) : super(key: key);
 
   @override
@@ -33,43 +31,52 @@ class AddActivityDialog extends StatelessWidget {
             decoration: const InputDecoration(labelText: 'Activity'),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final DateTime? pickedDateTime = await showDatePicker(
-                context: context,
-                initialDate: selectedDateTime ?? DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2101),
-              );
-
-              if (pickedDateTime != null) {
-                final TimeOfDay? pickedTime = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.fromDateTime(selectedDateTime ?? DateTime.now()),
-                );
-
-                if (pickedTime != null) {
-                  final DateTime finalDateTime = DateTime(
-                    pickedDateTime.year,
-                    pickedDateTime.month,
-                    pickedDateTime.day,
-                    pickedTime.hour,
-                    pickedTime.minute,
-                  );
-                  onAddActivity(userController.text, activityController.text, finalDateTime);
-                  onCloseDialog();
-                }
-              }
-            },
+            onPressed: () => _selectDateTime(context),
             child: const Text('Select Date and Time'),
           ),
         ],
       ),
       actions: [
         ElevatedButton(
-          onPressed: onCloseDialog,
+          onPressed: () => context.pop(),
           child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            onAddActivity(userController.text, activityController.text, selectedDateTime);
+            context.pop();
+          },
+          child: const Text('Add'),
         ),
       ],
     );
+  }
+
+  void _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedDateTime,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+      );
+
+      if (pickedTime != null) {
+        final DateTime finalDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        onAddActivity(userController.text, activityController.text, finalDateTime);
+        context.pop();
+      }
+    }
   }
 }

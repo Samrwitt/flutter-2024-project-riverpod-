@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:digital_notebook/models/note_model.dart';
-import 'package:digital_notebook/providers/notes_provider.dart';
+import 'package:digital_notebook/providers/notes_provider.dart' as providers;
+import "package:digital_notebook/presentation/widgets/note_card.dart";
 
 class AdminNotepage extends ConsumerStatefulWidget {
-  const AdminNotepage({Key? key, required this.currentIndex}) : super(key: key);
+  const AdminNotepage({
+    Key? key,
+    required this.currentIndex,
+    required this.userId,
+  }) : super(key: key);
 
   final int currentIndex;
+  final String userId;
 
   @override
-  ConsumerState<AdminNotepage> createState() => AdminNotepageState();
+  ConsumerState<AdminNotepage> createState() => _AdminNotepageState();
 }
 
-class AdminNotepageState extends ConsumerState<AdminNotepage> {
+class _AdminNotepageState extends ConsumerState<AdminNotepage> {
   final titleController = TextEditingController();
   final bodyController = TextEditingController();
   bool isAddingNote = false;
@@ -32,80 +39,31 @@ class AdminNotepageState extends ConsumerState<AdminNotepage> {
     });
   }
 
-  void _showEditNoteDialog(BuildContext context, int index, Note note) {
+  void _showEditNoteDialog(int index, Note note) {
     final editTitleController = TextEditingController(text: note.title);
     final editBodyController = TextEditingController(text: note.body);
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Note'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: editTitleController,
-                style: const TextStyle(fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Title",
-                ),
-                maxLines: null,
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: editBodyController,
-                style: const TextStyle(fontSize: 18, color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Enter your note here...",
-                ),
-                maxLines: null,
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                ref.read(notesProvider.notifier).editNoteTitle(index, editTitleController.text);
-                ref.read(notesProvider.notifier).editNoteBody(index, editBodyController.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
+    context.push('/editNote', extra: {
+      'index': index,
+      'editTitleController': editTitleController,
+      'editBodyController': editBodyController,
+      'note': note,
+      'onSave': () {
+        ref
+            .read(providers.notesProvider.notifier)
+            .editNoteTitle(index, editTitleController.text);
+        ref
+            .read(providers.notesProvider.notifier)
+            .editNoteBody(index, editBodyController.text);
       },
-    );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final notes = ref.watch(notesProvider);
-    
+    final notes = ref.watch(providers.notesProvider);
 
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     isAddingNote ? 'Add Note' : 'Notes',
-      //     style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-      //   ),
-      //   actions: isAddingNote
-      //       ? [
-      //           IconButton(
-      //             icon: const Icon(Icons.cancel),
-      //             onPressed: toggleAddNote,
-      //           ),
-      //         ]
-      //       : null,
-      // ),
       body: isAddingNote
           ? Padding(
               padding: const EdgeInsets.all(15.0),
@@ -113,10 +71,14 @@ class AdminNotepageState extends ConsumerState<AdminNotepage> {
                 children: [
                   TextFormField(
                     controller: titleController,
-                    style: const TextStyle(fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                     decoration: const InputDecoration(
-                      border: InputBorder.none,
                       hintText: "Title",
+                      border: InputBorder.none,
                     ),
                     maxLines: null,
                   ),
@@ -125,8 +87,8 @@ class AdminNotepageState extends ConsumerState<AdminNotepage> {
                     controller: bodyController,
                     style: const TextStyle(fontSize: 18, color: Colors.black),
                     decoration: const InputDecoration(
-                      border: InputBorder.none,
                       hintText: "Enter your note here...",
+                      border: InputBorder.none,
                     ),
                     maxLines: null,
                   ),
@@ -137,8 +99,9 @@ class AdminNotepageState extends ConsumerState<AdminNotepage> {
                         title: titleController.text,
                         body: bodyController.text,
                         index: widget.currentIndex,
+                        userId: widget.userId,
                       );
-                      ref.read(notesProvider.notifier).addNote(note);
+                      ref.read(providers.notesProvider.notifier).addNote(note);
                       toggleAddNote();
                     },
                     child: const Text('Save Note'),
@@ -149,22 +112,26 @@ class AdminNotepageState extends ConsumerState<AdminNotepage> {
           : ListView.builder(
               itemCount: notes.length,
               itemBuilder: (context, index) {
-                final note = notes[index];
-                return ListTile(
-                  title: Text(note.title),
-                  subtitle: Text(note.body),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      _showEditNoteDialog(context, index, note);
-                    },
-                  ),
-                  onTap: () {
-                    // Handle note tap if needed
+                return NotesCard(
+                  note: notes[index],
+                  index: index,
+                  onNoteDeleted: (index) => ref
+                      .read(providers.notesProvider.notifier)
+                      .deleteNote(index),
+                  onNoteTitleEdited: (note) {
+                    ref
+                        .read(providers.notesProvider.notifier)
+                        .editNoteTitle(note.index, note.title);
+                  },
+                  onNoteBodyEdited: (note) {
+                    ref
+                        .read(providers.notesProvider.notifier)
+                        .editNoteBody(note.index, note.body);
                   },
                 );
               },
             ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: toggleAddNote,
         child: Icon(isAddingNote ? Icons.cancel : Icons.add),

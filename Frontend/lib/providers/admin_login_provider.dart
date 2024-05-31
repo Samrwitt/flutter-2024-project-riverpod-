@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final adminLoginProvider =
+    ChangeNotifierProvider<AdminLoginProvider>((ref) => AdminLoginProvider());
 
 class AdminLoginProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -16,6 +20,7 @@ class AdminLoginProvider extends ChangeNotifier {
   void login(String email, String password) async {
     _isLoading = true;
     _hasError = false; // Reset error state on new login attempt
+    _errorMessage = null;
     notifyListeners();
 
     // Simulate a delay for demonstration purposes

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:digital_notebook/models/note_model.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class AddNote extends StatefulWidget {
-  const AddNote({Key? key, required this.onNewNoteCreated, required this.currentIndex})
-      : super(key: key);
+  const AddNote({
+    Key? key,
+    required this.onNewNoteCreated,
+    required this.currentIndex,
+    required this.userId,
+  }) : super(key: key);
 
   final Function(Note) onNewNoteCreated;
   final int currentIndex;
+  final String userId;
 
   @override
   _AddNoteState createState() => _AddNoteState();
@@ -26,52 +31,53 @@ class _AddNoteState extends State<AddNote> {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Add Note',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w300),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Add Note',
+          style: TextStyle(fontSize: 23, fontWeight: FontWeight.w300),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                style: const TextStyle(
-                    fontSize: 26, color: Colors.black, fontWeight: FontWeight.bold),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Title",
-                ),
-                maxLines: null,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _titleController,
+              style: const TextStyle(
+                  fontSize: 26,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: "Title",
               ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _bodyController,
-                style: const TextStyle(fontSize: 18, color: Colors.black),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Enter your note here...",
-                ),
-                maxLines: null,
+              maxLines: null,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              controller: _bodyController,
+              style: const TextStyle(fontSize: 18, color: Colors.black),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: "Enter your note here...",
               ),
-              ElevatedButton(
-                onPressed: () {
-                  final note = Note(
-                    title: _titleController.text,
-                    body: _bodyController.text,
-                    index: widget.currentIndex,
-                  );
-                  widget.onNewNoteCreated(note);
-                  Navigator.pop(context);
-                },
-                child: const Text('Save Note'),
-              ),
-            ],
-          ),
+              maxLines: null,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final note = Note(
+                  title: _titleController.text,
+                  body: _bodyController.text,
+                  index: widget.currentIndex,
+                  userId: widget.userId,
+                );
+                widget.onNewNoteCreated(note);
+                context.pop(); // Using GoRouter to navigate back
+              },
+              child: const Text('Save Note'),
+            ),
+          ],
         ),
       ),
     );

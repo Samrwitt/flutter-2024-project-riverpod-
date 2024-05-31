@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:digital_notebook/models/note_model.dart';
-//import 'package:digital_notebook/providers/notes_provider.dart';
+// Ensure your Note model and provider paths are correct
 
-final currentlyEditedNoteProvider = StateProvider<Note>((ref) => throw UnimplementedError());
+final currentlyEditedNoteProvider =
+    StateProvider<Note>((ref) => throw UnimplementedError());
 
 class NoteView extends ConsumerStatefulWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -19,14 +21,15 @@ class _NoteViewState extends ConsumerState<NoteView> {
   @override
   void initState() {
     super.initState();
+    // Initialize controllers with the current note values
+    final note = ref.read(currentlyEditedNoteProvider);
+    titleController = TextEditingController(text: note.title);
+    bodyController = TextEditingController(text: note.body);
   }
 
   @override
   Widget build(BuildContext context) {
     final note = ref.watch(currentlyEditedNoteProvider);
-
-    titleController = TextEditingController(text: note.title);
-    bodyController = TextEditingController(text: note.body);
 
     return Scaffold(
       appBar: AppBar(
@@ -42,50 +45,11 @@ class _NoteViewState extends ConsumerState<NoteView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    backgroundColor: Colors.grey[900],
-                    title: const Text(
-                      "Delete Note ?",
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    content: Text("Note '${titleController.text}' will be deleted!"),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Cancel"),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          ref.read(currentlyEditedNoteProvider.notifier).state = Note(  title: titleController.text,
-                          body: bodyController.text,
-                          index: note.index,); // Reset the currently edited note
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Delete"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
+            onPressed: () => _confirmDelete(context),
           ),
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: () {
-              ref.read(currentlyEditedNoteProvider.notifier).state = note.copyWith(
-                title: titleController.text,
-                body: bodyController.text,
-              );
-              Navigator.of(context).pop();
-            },
+            onPressed: () => _saveNote(context),
           ),
         ],
       ),
@@ -94,7 +58,7 @@ class _NoteViewState extends ConsumerState<NoteView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
             TextField(
               controller: bodyController,
               style: const TextStyle(fontSize: 20, color: Colors.black),
@@ -108,5 +72,50 @@ class _NoteViewState extends ConsumerState<NoteView> {
         ),
       ),
     );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title:
+              const Text("Delete Note?", style: TextStyle(color: Colors.white)),
+          content: Text("Note '${titleController.text}' will be deleted!"),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                // Here you might want to add your delete logic
+                context.pop(); // Close the dialog
+                context.pop(); // Navigate back from NoteView
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _saveNote(BuildContext context) {
+    ref
+        .read(currentlyEditedNoteProvider.notifier)
+        .update((state) => state.copyWith(
+              title: titleController.text,
+              body: bodyController.text,
+            ));
+    context.pop(); // Close the NoteView after saving
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    bodyController.dispose();
+    super.dispose();
   }
 }

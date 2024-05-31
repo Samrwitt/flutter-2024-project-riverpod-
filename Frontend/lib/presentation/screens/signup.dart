@@ -1,12 +1,14 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/password.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/gestures.dart';
 import '../widgets/email.dart';
+import '../widgets/password.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/ui_provider.dart';
 
-final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
+final emailFieldProvider =
+    ChangeNotifierProvider((ref) => EmailFieldProvider());
 final uiProviderProvider = ChangeNotifierProvider((ref) => UIProvider());
 
 class SignupPage extends ConsumerStatefulWidget {
@@ -17,11 +19,13 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -31,6 +35,13 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   Widget build(BuildContext context) {
     final authProvider = ref.watch(authProviderProvider);
     final emailField = ref.watch(emailFieldProvider);
+
+    ref.listen<AuthProvider>(authProviderProvider, (previous, next) {
+      if (!next.hasError && !next.isLoading) {
+        context
+            .go('/notes'); // Navigate to the notes page if signup is successful
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(),
@@ -59,12 +70,10 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
-                        children: <TextSpan>[
+                        children: [
                           const TextSpan(
                             text: "Already have an account? ",
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(color: Colors.black),
                           ),
                           TextSpan(
                             text: 'Sign in Here',
@@ -74,7 +83,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Navigator.pushNamed(context, '/login');
+                                context.go('/login'); // GoRouter navigation
                               },
                           ),
                         ],
@@ -83,90 +92,34 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                EmailField(controller: _emailController), // Pass controller
-                const SizedBox(height: 10),
-                const TextField(
-                  decoration: InputDecoration(
-                    labelText: 'User Name',
-                    labelStyle: TextStyle(
-                      color: Colors.black,
-                    ),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blueGrey),
                     ),
                   ),
-                  style: TextStyle(
-                    fontFamily: 'San Serif',
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
                 ),
                 const SizedBox(height: 10),
-                PasswordField(controller: _passwordController), // Pass controller
+                EmailField(
+                    controller: _emailController), // Custom email field widget
+                const SizedBox(height: 10),
+                PasswordField(
+                    controller:
+                        _passwordController), // Custom password field widget
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () async {
-                    final isValidEmail = emailField.isValid; // Check email validation
-                    if (isValidEmail) {
-                      await authProvider.signupUser(
-                        _emailController.text.trim(),
-                        _passwordController.text.trim(),
-                      );
-                      if (!authProvider.hasError) {
-                        Navigator.pushNamed(context, '/notes');
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text(
-                                'Signup Error',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                              content: Text(authProvider.error ?? 'An unknown error occurred.'),
-                              backgroundColor: Colors.grey[900],
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text(
-                              'Invalid Email',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                            content: const Text(
-                              'Please enter a valid email address.',
-                            ),
-                            backgroundColor: Colors.grey[900],
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
+                  onPressed: authProvider.isLoading
+                      ? null
+                      : () async {
+                          await authProvider.signupUser(
+                            _usernameController.text.trim(),
+                            _emailController.text.trim(),
+                            _passwordController.text.trim(),
                           );
                         },
-                      );
-                    }
-                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     textStyle: const TextStyle(
@@ -175,12 +128,17 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     ),
                   ),
                   child: authProvider.isLoading
-                      ? CircularProgressIndicator()
+                      ? const CircularProgressIndicator()
                       : const Text(
                           'Sign Up',
                           style: TextStyle(color: Colors.blueGrey),
                         ),
                 ),
+                if (authProvider.error != null)
+                  Text(
+                    authProvider.error!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
               ],
             ),
           ),

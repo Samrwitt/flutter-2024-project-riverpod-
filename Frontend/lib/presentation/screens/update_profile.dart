@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/user_provider.dart';
 
 class UpdateProfilePage extends ConsumerStatefulWidget {
@@ -57,10 +58,17 @@ class _UpdateProfilePageState extends ConsumerState<UpdateProfilePage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                ref.read(userProvider.notifier).updateUsername(usernameController.text);
-                ref.read(userProvider.notifier).updateEmail(emailController.text);
-                ref.read(userProvider.notifier).updatePassword(passwordController.text);
-                Navigator.of(context).pop(); // Navigate back after updating
+                ref
+                    .read(userProvider.notifier)
+                    .updateUsername(usernameController.text);
+                ref
+                    .read(userProvider.notifier)
+                    .updateEmail(emailController.text);
+                ref
+                    .read(userProvider.notifier)
+                    .updatePassword(passwordController.text);
+                context
+                    .pop(); // Use GoRouter's context extension to navigate back
               },
               child: const Text('Save Changes'),
             ),

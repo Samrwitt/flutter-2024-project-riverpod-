@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-//import  '../../providers/auth_provider.dart';
 
 final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
 
@@ -42,28 +41,33 @@ class EmailField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = ref.watch(emailFieldProvider.notifier);
+    final provider = ref.watch(emailFieldProvider);
 
     return Container(
       height: 57,
       padding: const EdgeInsets.all(1),
-      child: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          labelText: 'Email',
-          labelStyle: TextStyle(
-            color: Color.fromARGB(255, 87, 85, 85),
+      child: Column(
+        children: [
+          TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'Email',
+              labelStyle: const TextStyle(
+                color: Color.fromARGB(255, 87, 85, 85),
+              ),
+              border: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.blueGrey),
+              ),
+              errorText: provider.isValid ? null : 'Invalid email address',
+            ),
+            style: const TextStyle(
+              fontFamily: 'San Serif',
+              fontSize: 16,
+              color: Colors.black,
+            ),
+            onChanged: (value) => ref.read(emailFieldProvider.notifier).updateEmail(value),
           ),
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.blueGrey),
-          ),
-        ),
-        style: const TextStyle(
-          fontFamily: 'San Serif',
-          fontSize: 16,
-          color: Colors.black,
-        ),
-        onChanged: (value) => provider.updateEmail(value),
+        ],
       ),
     );
   }

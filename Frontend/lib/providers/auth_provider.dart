@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-//import 'package:digital_notebook/presentation/widgets/email.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'user_provider.dart'; // Ensure you import the user_provider
 
-// Define the state provider for authentication
-final authProviderProvider = ChangeNotifierProvider((ref) => AuthProvider());
-
-// Define the state provider for admin login
-// final adminLoginProvider = ChangeNotifierProvider((ref) => AdminLoginProvider());
+final authProviderProvider = ChangeNotifierProvider<AuthProvider>((ref) => AuthProvider(ref));
 
 class AuthProvider extends ChangeNotifier {
+  final ChangeNotifierProviderRef ref;
+
+  AuthProvider(this.ref);
+
   String _email = '';
   String _password = '';
   String _username = '';
@@ -28,7 +29,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setUsername(String value){
+  void setUsername(String value) {
     _username = value;
     notifyListeners();
   }
@@ -39,30 +40,49 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> loginUser(String email, String password) async {
-    // Login logic...
-    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
-      _hasError = true;
-      _error = 'invalid email';
-      notifyListeners();
-      return;
-    }
-  _isLoading = false;
+    _isLoading = true;
+    _hasError = false;
+    _error = null;
     notifyListeners();
+
+    // Simulate a network request
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (email == '' && password == '') {
+      // Save user data to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userEmail', email);
+      await prefs.setString('userPassword', password);
+
+      // Update the userProvider with the logged-in user information
+      ref.read(userProvider.notifier).setUser(
+            User(id: '1', username: 'User', email: email, password: password),
+          );
+
+      _isLoading = false;
+      _hasError = false;
+      _error = null;
+      notifyListeners();
+    } else {
+      _isLoading = false;
+      _hasError = true;
+      _error = 'Invalid email or password';
+      notifyListeners();
+    }
   }
 
-  
-
-  Future<void> signupUser(String email, String password) async {
+  Future<void> signupUser(
+      String username, String email, String password) async {
     if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
       _hasError = true;
-      _error = 'invalid email';
+      _error = 'Invalid email';
       notifyListeners();
       return;
     }
 
-    if (username.isEmpty){
-      _hasError=true;
-      _error='username cannot be empty';
+    if (username.isEmpty) {
+      _hasError = true;
+      _error = 'Username cannot be empty';
       notifyListeners();
       return;
     }
@@ -73,52 +93,27 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
+
     _isLoading = true;
     notifyListeners();
-    try {
-      // Implement your signup logic here
-      // For example, make an API call to register the user
-      // and update the _hasError and _error properties accordingly
-      _hasError = false;
-      _error = null;
-    } catch (e) {
-      _hasError = true;
-      _error = 'Error signing up: $e';
-    }
+
+    // Simulate a network request
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Simulate successful signup
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+    await prefs.setString('userEmail', email);
+    await prefs.setString('userPassword', password);
+
+    // Update the userProvider with the signed-up user information
+    ref.read(userProvider.notifier).setUser(
+          User(id: '1', username: username, email: email, password: password),
+        );
+
     _isLoading = false;
+    _hasError = false;
+    _error = null;
     notifyListeners();
   }
-
-
- bool _isValidEmail(String email) {
-    // Email validation logic
-    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegExp.hasMatch(email);
-  }
-
-  bool _isValidPassword(String password) {
-    // Password validation logic
-    return password.length >= 8;
-  }
 }
-
-// class AdminLoginProvider extends ChangeNotifier {
-//   bool _isLoading = false;
-//   String? _errorMessage;
-
-//   bool get isLoading => _isLoading;
-//   String? get errorMessage => _errorMessage;
-
-//   void login() {
-//     // Perform login logic here
-//     _isLoading = true;
-//     notifyListeners();
-
-//     // Simulate a delay for demonstration purposes
-//     Future.delayed(const Duration(seconds: 2), () {
-//       _isLoading = false;
-//       _errorMessage = 'Invalid credentials';
-//       notifyListeners();
-//     });
-//   }
-// }

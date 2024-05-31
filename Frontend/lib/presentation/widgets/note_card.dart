@@ -8,7 +8,7 @@ class NotesCard extends ConsumerWidget {
   final void Function(int) onNoteDeleted;
   final void Function(Note) onNoteBodyEdited;
   final void Function(Note) onNoteTitleEdited;
- 
+
   const NotesCard({
     Key? key,
     required this.note,
@@ -57,11 +57,13 @@ class NotesCard extends ConsumerWidget {
   }
 
   void _onEditNotePressed(BuildContext context) {
-    // Show dialog or navigate to edit screen to edit title and body separately
-    // For example, you can use showDialog to create a dialog for editing
+    // Show dialog to edit title and body separately
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        String editedTitle = note.title;
+        String editedBody = note.body;
+
         return AlertDialog(
           title: const Text('Edit Note'),
           content: Column(
@@ -69,12 +71,12 @@ class NotesCard extends ConsumerWidget {
             children: [
               TextFormField(
                 initialValue: note.title,
-                onChanged: (value) => note.title = value,
+                onChanged: (value) => editedTitle = value,
                 decoration: const InputDecoration(labelText: 'Title'),
               ),
               TextFormField(
                 initialValue: note.body,
-                onChanged: (value) => note.body = value,
+                onChanged: (value) => editedBody = value,
                 decoration: const InputDecoration(labelText: 'Body'),
               ),
             ],
@@ -82,7 +84,16 @@ class NotesCard extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                note.title = editedTitle;
+                note.body = editedBody;
                 onNoteTitleEdited(note);
+                onNoteBodyEdited(note);
                 Navigator.pop(context);
               },
               child: const Text('Save'),

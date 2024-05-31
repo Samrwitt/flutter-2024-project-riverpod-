@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:digital_notebook/models/note_model.dart';
 
 // Provider for the list of notes
-final notesProvider = StateNotifierProvider<NotesNotifier, List<Note>>((ref) => NotesNotifier());
+final notesProvider =
+    StateNotifierProvider<NotesNotifier, List<Note>>((ref) => NotesNotifier());
 
 class NotesNotifier extends StateNotifier<List<Note>> {
   NotesNotifier() : super([]);
@@ -12,17 +13,25 @@ class NotesNotifier extends StateNotifier<List<Note>> {
   }
 
   void editNoteTitle(int index, String title) {
-    state[index] = state[index].copyWith(title: title);
-    state = [...state];
+    final updatedNote = state[index].copyWith(title: title);
+    state = [
+      for (int i = 0; i < state.length; i++)
+        if (i == index) updatedNote else state[i],
+    ];
   }
 
   void editNoteBody(int index, String body) {
-    state[index] = state[index].copyWith(body: body);
-    state = [...state];
+    final updatedNote = state[index].copyWith(body: body);
+    state = [
+      for (int i = 0; i < state.length; i++)
+        if (i == index) updatedNote else state[i],
+    ];
   }
 
   void deleteNote(int index) {
-    state.removeAt(index);
-    state = [...state];
+    state = [
+      for (int i = 0; i < state.length; i++)
+        if (i != index) state[i],
+    ];
   }
 }

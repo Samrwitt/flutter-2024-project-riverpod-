@@ -1,8 +1,9 @@
-import 'package:digital_notebook/models/activity_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-//import '../models/note_model.dart';
+import '../models/activity_model.dart';
 
-final activitiesProvider = StateNotifierProvider<ActivitiesNotifier, List<Activity>>((ref) => ActivitiesNotifier());
+final activitiesProvider =
+    StateNotifierProvider<ActivitiesNotifier, List<Activity>>(
+        (ref) => ActivitiesNotifier());
 
 class ActivitiesNotifier extends StateNotifier<List<Activity>> {
   ActivitiesNotifier() : super([]);
@@ -11,19 +12,24 @@ class ActivitiesNotifier extends StateNotifier<List<Activity>> {
     final activity = Activity(
       user: user,
       name: name,
-      date: '${dateTime.year}-${dateTime.month}-${dateTime.day}',
-      time: '${dateTime.hour}:${dateTime.minute}',
+      date:
+          '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}',
+      time:
+          '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}',
       logs: ['Added at ${DateTime.now()}'],
     );
     state = [...state, activity];
   }
 
-  void editActivity(int index, String newUser, String newName, DateTime newDateTime) {
+  void editActivity(
+      int index, String newUser, String newName, DateTime newDateTime) {
     final editedActivity = state[index].copyWith(
       user: newUser,
       name: newName,
-      date: '${newDateTime.year}-${newDateTime.month}-${newDateTime.day}',
-      time: '${newDateTime.hour}:${newDateTime.minute}',
+      date:
+          '${newDateTime.year}-${newDateTime.month.toString().padLeft(2, '0')}-${newDateTime.day.toString().padLeft(2, '0')}',
+      time:
+          '${newDateTime.hour.toString().padLeft(2, '0')}:${newDateTime.minute.toString().padLeft(2, '0')}',
       logs: [
         ...state[index].logs,
         'Edited at ${DateTime.now()}',

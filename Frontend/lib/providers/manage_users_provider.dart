@@ -1,35 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:digital_notebook/models/user_model.dart';
+import 'package:digital_notebook/models/user_model.dart'; // Import your User model
 
 // Simulated user data
-List<User> _dummyUsers = [
-  User(username: 'User1', email: 'user1@example.com', password: 'password123'),
-  User(username: 'User2', email: 'user2@example.com', password: 'password123'),
-  // Add more users as needed
+final List<User> _dummyUsers = [
+  User(id: '1', username: 'User1', email: 'user1@example.com'),
+  User(id: '2', username: 'User2', email: 'user2@example.com'),
 ];
 
 // StateNotifier for managing users
 class ManageUsersNotifier extends StateNotifier<AsyncValue<List<User>>> {
   ManageUsersNotifier() : super(const AsyncValue.loading()) {
-    _loadUsers();
+    loadUsers();
   }
 
-  Future<void> _loadUsers() async {
-    try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 2));
-      state = AsyncValue.data(_dummyUsers);
-    } catch (e, StackTrace) {
-      state = AsyncValue.error(e, StackTrace);
-    }
+  void loadUsers() async {
+    // Simulate a network delay
+    await Future.delayed(const Duration(seconds: 2));
+    state = AsyncValue.data(_dummyUsers);
   }
 
-  void deleteUser(User user) {
-    final currentUsers = state.asData?.value ?? [];
-    state = AsyncValue.data(currentUsers.where((u) => u != user).toList());
+  void addUser(User user) {
+    state.whenData((users) => state = AsyncValue.data([...users, user]));
+  }
+
+  void deleteUser(String userId) {
+    state.whenData((users) => state =
+        AsyncValue.data(users.where((user) => user.id != userId).toList()));
+  }
+
+  void updateUser(User updatedUser) {
+    state.whenData((users) {
+      final index = users.indexWhere((user) => user.id == updatedUser.id);
+      final updatedUsers = List<User>.from(users);
+      if (index != -1) {
+        updatedUsers[index] = updatedUser;
+        state = AsyncValue.data(updatedUsers);
+      }
+    });
   }
 }
 
-final manageUsersProvider = StateNotifierProvider<ManageUsersNotifier, AsyncValue<List<User>>>((ref) {
+final manageUsersProvider =
+    StateNotifierProvider<ManageUsersNotifier, AsyncValue<List<User>>>((ref) {
   return ManageUsersNotifier();
 });

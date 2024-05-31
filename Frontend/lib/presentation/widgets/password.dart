@@ -9,12 +9,13 @@ class PasswordFieldProvider extends ValueNotifier<bool> {
   }
 }
 
-final passwordFieldProvider = ChangeNotifierProvider((ref) => PasswordFieldProvider());
+final passwordFieldProvider =
+    ChangeNotifierProvider((ref) => PasswordFieldProvider());
 
 class PasswordField extends ConsumerWidget {
-  final TextEditingController controller; // Add this line
+  final TextEditingController controller;
 
-  const PasswordField({Key? key, required this.controller}) : super(key: key); // Modify constructor
+  const PasswordField({Key? key, required this.controller}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +29,7 @@ class PasswordField extends ConsumerWidget {
       ),
       child: Center(
         child: TextField(
-          controller: controller, // Use the passed controller
+          controller: controller,
           obscureText: provider.value,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
@@ -36,7 +37,8 @@ class PasswordField extends ConsumerWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
             border: InputBorder.none,
             suffixIcon: IconButton(
-              onPressed: () => provider.toggleObscureText(),
+              onPressed: () =>
+                  ref.read(passwordFieldProvider.notifier).toggleObscureText(),
               icon: Icon(
                 provider.value ? Icons.visibility_off : Icons.visibility,
                 color: Colors.blueGrey,

@@ -1,10 +1,12 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/ui_provider.dart';
-import '../widgets/password.dart';
 import '../widgets/email.dart';
+import '../widgets/password.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -29,10 +31,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authProvider = ref.watch(authProviderProvider);
     final uiProvider = ref.watch(uiProviderProvider);
 
+    ref.listen<AuthProvider>(authProviderProvider, (previous, next) {
+      if (!next.hasError && !next.isLoading) {
+        context
+            .go('/notes'); // Navigate to the notes page if login is successful
+      }
+    });
+
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushNamed(context, '/');
-        return true; // return true to allow popping the route
+        context.go('/'); // Uses GoRouter to navigate to the homepage
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -84,7 +93,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushNamed(context, '/signup');
+                                  context
+                                      .push('/signup'); // GoRouter navigation
                                 },
                             )
                           ],
@@ -93,9 +103,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  EmailField(controller: _emailController), // Pass controller
+                  EmailField(controller: _emailController),
                   const SizedBox(height: 20),
-                  PasswordField(controller: _passwordController), // Pass controller
+                  PasswordField(controller: _passwordController),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -116,19 +126,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      uiProvider.setIsLoading(true);
-                      authProvider.loginUser(
-                        _emailController.text, // Use the email entered by the user
-                        _passwordController.text, // Use the password entered by the user
-                      );
-                      if (!authProvider.hasError) {
-                        Navigator.pushNamed(context, '/notes');
-                      } else {
-                        uiProvider.setIsLoading(false);
-                      }
-                    },
-                    child: uiProvider.isLoading
+                    onPressed: authProvider.isLoading
+                        ? null
+                        : () async {
+                            authProvider.setEmail(_emailController.text.trim());
+                            authProvider
+                                .setPassword(_passwordController.text.trim());
+                            await authProvider.loginUser(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim());
+                          },
+                    child: authProvider.isLoading
                         ? const CircularProgressIndicator()
                         : const Text(
                             'Login',

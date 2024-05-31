@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/password.dart';
 import '../../widgets/email.dart';
 import '../../../providers/admin_login_provider.dart';
+import 'package:go_router/go_router.dart';
 
 // Define the state provider
-final adminLoginProvider = ChangeNotifierProvider((ref) => AdminLoginProvider());
+final adminLoginProvider =
+    ChangeNotifierProvider((ref) => AdminLoginProvider());
 
 class AdminLoginPage extends ConsumerStatefulWidget {
-  const AdminLoginPage({Key? key}) : super(key: key);
+  const AdminLoginPage({super.key});
 
   @override
   ConsumerState<AdminLoginPage> createState() => _AdminLoginPageState();
@@ -31,13 +33,13 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
 
     ref.listen<AdminLoginProvider>(adminLoginProvider, (previous, next) {
       if (!next.hasError && !next.isLoading) {
-        Navigator.pushReplacementNamed(context, '/admin');
+        context.go('/admin'); // Navigates to the admin dashboard using GoRouter
       }
     });
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushNamed(context, '/');
+        context.go('/'); // Uses GoRouter to navigate to the homepage
         return false;
       },
       child: Scaffold(
@@ -45,7 +47,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
           title: const Text(
             'Admin Login',
             style: TextStyle(
-              color: Colors.white,
+              color: Color.fromARGB(255, 0, 0, 0),
               fontSize: 20,
             ),
           ),
@@ -71,7 +73,8 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
                   const SizedBox(height: 20),
                   EmailField(controller: _emailController), // Pass controller
                   const SizedBox(height: 20),
-                  PasswordField(controller: _passwordController), // Pass controller
+                  PasswordField(
+                      controller: _passwordController), // Pass controller
                   const SizedBox(height: 20),
                   if (adminLogin.errorMessage != null)
                     Text(
@@ -86,8 +89,10 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
                         ? null
                         : () {
                             adminLogin.login(
-                              _emailController.text, // Use the email entered by the user
-                              _passwordController.text, // Use the password entered by the user
+                              _emailController.text
+                                  .trim(), // Use the email entered by the user
+                              _passwordController.text
+                                  .trim(), // Use the password entered by the user
                             );
                           },
                     child: adminLogin.isLoading

@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-//import '../../../models/note_model.dart';
+import 'package:go_router/go_router.dart';
 import '../../../providers/notes_provider.dart';
 
 class AdminOthersPage extends ConsumerWidget {
-  const AdminOthersPage({Key? key}) : super(key: key);
+  const AdminOthersPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(notesProvider);
 
     return Scaffold(
+      // appBar: AppBar(
+      //   title: const Text('Other\'s Notes'),
+      //   leading: IconButton(
+      //     icon: const Icon(Icons.arrow_back),
+      //     onPressed: () => context.pop(), // Using GoRouter to navigate back
+      //   ),
+      // ),
       body: Theme(
         data: Theme.of(context).copyWith(
-          dialogBackgroundColor: Colors.grey[700],
+          dialogBackgroundColor: Color.fromARGB(255, 251, 251, 251),
         ),
         child: ListView.builder(
           itemCount: notes.length,
@@ -23,34 +30,36 @@ class AdminOthersPage extends ConsumerWidget {
               title: note.title,
               content: note.body,
               onTap: () {
-                _showNoteDetails(context, note.title);
+                showDialog(
+                  context: context,
+                  builder: (context) => OthersNoteDetailsDialog(
+                    noteTitle: note.title,
+                    noteBody: note.body,
+                  ),
+                );
               },
             );
-          }, 
+          },
         ),
       ),
-    );
-  }
-
-  void _showNoteDetails(BuildContext context, String noteTitle) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return OthersNoteDetailsDialog(noteTitle: noteTitle);
-      },
     );
   }
 }
 
 class OthersNoteDetailsDialog extends StatelessWidget {
   final String noteTitle;
+  final String noteBody;
 
-  const OthersNoteDetailsDialog({required this.noteTitle, Key? key}) : super(key: key);
+  const OthersNoteDetailsDialog({
+    required this.noteTitle,
+    required this.noteBody,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.grey[700],
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
@@ -79,29 +88,19 @@ class OthersNoteDetailsDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Cillum tempor aute do esse exercitation nulla tempor. Non laborum enim tempor amet quis minim fugiat. Nulla aliqua consequat duis qui aliquip Lorem.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Back'),
-                  ),
-                ],
+          SingleChildScrollView(
+            child: Text(
+              noteBody,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.pop(), // Using GoRouter to navigate back
+            child: const Text('Back'),
           ),
         ],
       ),
@@ -115,11 +114,11 @@ class OthersNotesCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const OthersNotesCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

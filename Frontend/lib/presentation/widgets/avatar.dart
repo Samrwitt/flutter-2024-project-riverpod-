@@ -1,29 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:digital_notebook/providers/navigatorkey_provider.dart';
-//import 'package:digital_notebook/providers/logout_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:digital_notebook/providers/user_provider.dart';
 
 // Provider for handling the logout functionality
-final logoutProvider = Provider.autoDispose((ref) {
-  return () {
-    ref.read(navigatorKeyProvider).currentState?.pushReplacementNamed('/');
+final logoutProvider = Provider.autoDispose<void Function(BuildContext)>((ref) {
+  return (BuildContext context) {
+    context.go('/'); // Using GoRouter to navigate to the home or login page
   };
 });
 
 // Provider for handling the delete account functionality
-final deleteAccountProvider = Provider.autoDispose((ref) {
-  return () {
+final deleteAccountProvider =
+    Provider.autoDispose<void Function(BuildContext)>((ref) {
+  return (BuildContext context) {
     // Implement your delete account logic here
-    ref.read(navigatorKeyProvider).currentState?.pushReplacementNamed('/');
+    context.go(
+        '/'); // Assuming the logout process or redirect to a confirmation page
   };
 });
 
 // Provider for handling the update profile functionality
-final updateProfileProvider = Provider.autoDispose((ref) {
-  return () {
-    // Implement your update profile logic here
-    ref.read(navigatorKeyProvider).currentState?.pushNamed('/updateProfile');
+final updateProfileProvider =
+    Provider.autoDispose<void Function(BuildContext)>((ref) {
+  return (BuildContext context) {
+    context.go('/updateProfile'); // Navigating using GoRouter
   };
 });
 
@@ -43,7 +44,7 @@ class CircleAvatarWidget extends ConsumerWidget {
           PopupMenuItem<String>(
             value: 'email',
             child: Text(
-              user.email,
+              user?.email ?? 'No Email',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             enabled: false, // This item is just a display for the email
@@ -66,18 +67,19 @@ class CircleAvatarWidget extends ConsumerWidget {
       onSelected: (String value) {
         switch (value) {
           case 'updateProfile':
-            updateProfile();
+            updateProfile(context);
             break;
           case 'deleteAccount':
-            deleteAccount();
+            deleteAccount(context);
             break;
           case 'logout':
-            logout();
+            logout(context);
             break;
         }
       },
       child: const CircleAvatar(
-        backgroundImage: AssetImage('assets/images/avatar.png'),
+        backgroundImage: AssetImage(
+            'assets/images/avatar.png'), // Ensure this asset is correctly placed in your assets directory
       ),
     );
   }

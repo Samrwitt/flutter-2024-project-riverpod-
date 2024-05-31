@@ -1,123 +1,165 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../models/note_model.dart';
+import '../../providers/notes_provider.dart' as providers;
 import '../widgets/note_card.dart';
-import '../widgets/avatar.dart';
-import 'others.dart' as others; // Use prefix for the import
-import 'addnotes.dart';
-import '../../providers/notes_provider.dart' as providers; // Use prefix for the import
+import 'others.dart' as others;
+import 'package:digital_notebook/presentation/widgets/avatar.dart';
 
-class Notepage extends StatelessWidget {
-  const Notepage({Key? key}) : super(key: key);
+class Notepage extends ConsumerStatefulWidget {
+  final String userId;
+
+  const Notepage({Key? key, required this.userId}) : super(key: key);
+
+  @override
+  ConsumerState<Notepage> createState() => _NotepageState();
+}
+
+class _NotepageState extends ConsumerState<Notepage> {
+  bool isAddingNote = false;
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text(
+      'Your Notes',
+      style: TextStyle(fontSize: 24),
+    ),
+    Text(
+      "Other's Notes",
+      style: TextStyle(fontSize: 24),
+    ),
+  ];
+
+  void toggleAddNote() {
+    setState(() {
+      isAddingNote = !isAddingNote;
+    });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const ProviderScope(
-      child: _Notepage(),
+    final notes = ref.watch(providers.notesProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notes', style: TextStyle(fontSize: 28)),
+        actions: <Widget>[
+          GestureDetector(
+            onTap: () {
+              final goRouter = GoRouter.of(context);
+              goRouter.push('/login');
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: CircleAvatarWidget(),
+            ),
+          ),
+        ],
+      ),
+      body: _selectedIndex == 0
+          ? (isAddingNote ? _buildAddNoteView() : _buildNotesListView(notes))
+          : const others.OthersNotesPage(),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: toggleAddNote,
+        child: Icon(isAddingNote ? Icons.cancel : Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notes),
+            label: 'Your Notes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_alt),
+            label: 'Other\'s Notes',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
-}
 
-class _Notepage extends ConsumerWidget {
-  const _Notepage({super.key});
+  Widget _buildAddNoteView() {
+    final titleController = TextEditingController();
+    final bodyController = TextEditingController();
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notes = ref.watch(providers.notesProvider); // Use prefixed import
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Padding(
-            padding: EdgeInsets.only(left: 10),
-            child: Text(
-              'Notes',
-              style: TextStyle(
-                fontSize: 28,
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Column(
+        children: [
+          TextFormField(
+            controller: titleController,
+            style: const TextStyle(
+              fontSize: 26,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
             ),
-          ),
-          actions: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Center(
-                    child: CircleAvatarWidget(),
-                  ),
-                ),
-              ),
+            decoration: const InputDecoration(
+              hintText: "Title",
+              border: InputBorder.none,
             ),
-          ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.notes), text: 'Notes'),
-              Tab(icon: Icon(Icons.people_alt), text: 'Other\'s Notes'),
-            ],
+            maxLines: null,
           ),
-        ),
-        body: TabBarView(
-          children: [
-            // ListView.builder(
-            //   itemCount: notes.length,
-            //   itemBuilder: (context, index) {
-            //     return NotesCard(
-            //       note: notes[index],
-            //       index: index,
-            //       // Provide required arguments for onNoteDeleted and onNoteEdited
-            //       onNoteDeleted: (index) => ref.read(providers.notesProvider.notifier).deleteNote(index), // Use prefixed import
-            //       onNoteEdited: (note) {
-            //         ref.read(providers.notesProvider.notifier).editNoteTitle(note.index, note.title); // Use prefixed import
-            //         ref.read(providers.notesProvider.notifier).editNoteBody(note.index, note.body); // Use prefixed import
-            //       },
-            //     );
-            //   },
-            // ),
-            ListView.builder(
-  itemCount: notes.length,
-  itemBuilder: (context, index) {
-    return NotesCard(
-      note: notes[index],
-      index: index,
-      onNoteDeleted: (index) => ref.read(providers.notesProvider.notifier).deleteNote(index),
-      onNoteTitleEdited: (note) {
-        ref.read(providers.notesProvider.notifier).editNoteTitle(note.index, note.title);
-      },
-      onNoteBodyEdited: (note) {
-        ref.read(providers.notesProvider.notifier).editNoteBody(note.index, note.body);
-      },
-    );
-  },
-),
-
-            others.ViewOtherNotesPage(), // Use prefixed import
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddNote(
-                  onNewNoteCreated: (note) {
-                    ref.read(providers.notesProvider.notifier).addNote(note); // Use prefixed import
-                  },
-                  currentIndex: 0, // Provide the current index
-                ),
-              ),
-            );
-          },
-          backgroundColor: Colors.blueGrey,
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
+          const SizedBox(height: 10),
+          TextFormField(
+            controller: bodyController,
+            style: const TextStyle(fontSize: 18, color: Colors.black),
+            decoration: const InputDecoration(
+              hintText: "Enter your note here...",
+              border: InputBorder.none,
+            ),
+            maxLines: null,
           ),
-        ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              final note = Note(
+                title: titleController.text,
+                body: bodyController.text,
+                userId: widget.userId,
+                index: 0,
+              );
+              ref.read(providers.notesProvider.notifier).addNote(note);
+              toggleAddNote();
+            },
+            child: const Text('Save Note'),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildNotesListView(List<Note> notes) {
+    return ListView.builder(
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        return NotesCard(
+          note: notes[index],
+          index: index,
+          onNoteDeleted: (index) => ref
+              .read(providers.notesProvider.notifier)
+              .deleteNote(index),
+          onNoteTitleEdited: (note) {
+            ref
+                .read(providers.notesProvider.notifier)
+                .editNoteTitle(note.index, note.title);
+          },
+          onNoteBodyEdited: (note) {
+            ref
+                .read(providers.notesProvider.notifier)
+                .editNoteBody(note.index, note.body);
+          },
+        );
+      },
     );
   }
 }

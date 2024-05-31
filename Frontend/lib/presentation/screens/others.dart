@@ -1,114 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:digital_notebook/providers/ui_provider.dart';
+import 'package:digital_notebook/providers/notes_provider.dart';
+import 'package:digital_notebook/presentation/widgets/email.dart';
 
-class Note {
-  final String title;
-  final String content;
+final emailFieldProvider =
+    ChangeNotifierProvider((ref) => EmailFieldProvider());
+final uiProviderProvider = ChangeNotifierProvider((ref) => UIProvider());
 
-  Note({required this.title, required this.content});
-}
+class OthersNotesPage extends ConsumerWidget {
+  const OthersNotesPage({Key? key}) : super(key: key);
 
-final notesProvider = StateNotifierProvider<NotesNotifier, List<Note>>((ref) {
-  return NotesNotifier([
-    Note(
-      title: 'Note 1',
-      content: 'This is the content of note 1.',
-    ),
-    Note(
-      title: 'Note 2',
-      content: 'This is the content of note 2.',
-    ),
-    Note(
-      title: 'Note 3',
-      content: 'This is the content of note 3.',
-    ),
-  ]);
-});
-
-class NotesNotifier extends StateNotifier<List<Note>> {
-  NotesNotifier(List<Note> notes) : super(notes);
-}
-
-class ViewNotesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(notesProvider);
 
     return Scaffold(
-      body: Theme(
-        data: Theme.of(context).copyWith(
-          dialogBackgroundColor: Colors.grey[400],
-        ),
-        child: ListView.builder(
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            final note = notes[index];
-            return OthersNotesCard(
-              title: note.title,
-              content: note.content,
-              onTap: () {
-                _showNoteDetails(context, note.title);
-              },
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              onPressed: () {
-                // Navigate to NotesPage
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.notes),
-            ),
-          ],
-        ),
+      // appBar: AppBar(
+      //   title: const Text('View Notes'),
+      //   leading: IconButton(
+      //     icon: const Icon(Icons.arrow_back),
+      //     onPressed: () => context.pop(), // Using GoRouter to navigate back
+      //   ),
+      // ),
+      body: ListView.builder(
+        itemCount: notes.length,
+        itemBuilder: (context, index) {
+          final note = notes[index];
+          return OthersNotesCard(
+            title: note.title,
+            content: note.body,
+            onTap: () => _showNoteDetails(context, note.title, note.body),
+          );
+        },
       ),
     );
   }
-}
 
-class ViewOtherNotesPage extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      body: Theme(
-        data: Theme.of(context).copyWith(
-          dialogBackgroundColor: Colors.grey[700],
-        ),
-        child: ListView.builder(
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return OthersNotesCard(
-              title: 'Note ${index + 1}',
-              content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-              onTap: () {
-                _showNoteDetails(context, 'Note ${index + 1}');
-              },
-            );
-          },
-        ),
-      ),
+  void _showNoteDetails(
+      BuildContext context, String noteTitle, String noteBody) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return OthersNoteDetailsDialog(
+            noteTitle: noteTitle, noteBody: noteBody);
+      },
     );
   }
 }
 
 class OthersNoteDetailsDialog extends StatelessWidget {
   final String noteTitle;
+  final String noteBody;
 
-  const OthersNoteDetailsDialog({required this.noteTitle, super.key});
+  const OthersNoteDetailsDialog({
+    required this.noteTitle,
+    required this.noteBody,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.grey[700],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      elevation: 0,
       child: contentBox(context),
     );
   }
@@ -116,11 +71,6 @@ class OthersNoteDetailsDialog extends StatelessWidget {
   Widget contentBox(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(8.0),
-        color: Colors.white,
-      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -128,50 +78,31 @@ class OthersNoteDetailsDialog extends StatelessWidget {
             noteTitle,
             style: const TextStyle(
               fontSize: 20,
-              color: Colors.black,
               fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 16),
-          const SizedBox(height: 16),
           Expanded(
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Cillum tempor aute do esse exercitation nulla tempor. Non laborum enim tempor amet quis minim fugiat. Nulla aliqua consequat duis qui aliquip Lorem.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Back'),
-                  ),
-                ],
+              child: Text(
+                noteBody,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.pop(), // Use GoRouter to close the dialog
+            child: const Text('Back'),
           ),
         ],
       ),
     );
   }
-}
-
-void _showNoteDetails(BuildContext context, String noteTitle) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return OthersNoteDetailsDialog(noteTitle: noteTitle);
-    },
-  );
 }
 
 class OthersNotesCard extends StatelessWidget {
@@ -180,11 +111,11 @@ class OthersNotesCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const OthersNotesCard({
-    super.key,
+    Key? key,
     required this.title,
     required this.content,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -196,12 +127,4 @@ class OthersNotesCard extends StatelessWidget {
       ),
     );
   }
-}
-
-void main() {
-  runApp(ProviderScope(
-    child: MaterialApp(
-      home: ViewNotesPage(),
-    ),
-  ));
 }

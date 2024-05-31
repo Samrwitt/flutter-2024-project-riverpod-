@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:digital_notebook/providers/navigatorkey_provider.dart';
-//import 'package:digital_notebook/providers/logout_provider.dart';
-//import 'package:digital_notebook/providers/manage_users_provider.dart'; // Import the provider for managing users
+import 'package:digital_notebook/providers/logout_provider.dart';
+import 'package:digital_notebook/providers/manage_users_provider.dart';
 
-// Provider for handling the logout functionality for admin
-final LogoutProvider = Provider.autoDispose((ref) {
-  return () {
-    ref.read(navigatorKeyProvider).currentState?.pushReplacementNamed('/');
+// Provider for handling the logout functionality
+final logoutProvider = Provider.autoDispose<void Function(BuildContext)>((ref) {
+  return (BuildContext context) {
+    context.go('/'); // Assuming '/' is the route to logout and redirect to
   };
 });
 
@@ -16,8 +17,7 @@ class AdminCircleAvatarWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Logout = ref.watch(LogoutProvider);
-    //final manageUsers = ref.watch(manageUsersProvider);
+    final logout = ref.watch(logoutProvider);
 
     return PopupMenuButton<String>(
       itemBuilder: (BuildContext context) {
@@ -26,7 +26,7 @@ class AdminCircleAvatarWidget extends ConsumerWidget {
             value: 'admin',
             child: Text(
               'Admin',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             enabled: false, // This item is just a display for the admin name
           ),
@@ -36,7 +36,7 @@ class AdminCircleAvatarWidget extends ConsumerWidget {
             child: Text('Manage Users'),
           ),
           const PopupMenuItem<String>(
-            value: 'Logout',
+            value: 'logout',
             child: Text('Logout'),
           ),
         ];
@@ -44,15 +44,17 @@ class AdminCircleAvatarWidget extends ConsumerWidget {
       onSelected: (String value) {
         switch (value) {
           case 'manageUsers':
-            Navigator.pushNamed(context, '/manageUsers');
+            context.go('/manageUsers'); // Navigate using GoRouter
             break;
-          case 'Logout':
-            Logout();
+          case 'logout':
+            logout(
+                context); // Execute logout function which uses GoRouter to navigate
             break;
         }
       },
       child: const CircleAvatar(
-        backgroundImage: AssetImage('assets/images/avatar.png'), // Replace with admin avatar image
+        backgroundImage: AssetImage(
+            'assets/images/avatar.png'), // Ensure this asset is correctly placed in your assets directory
       ),
     );
   }
