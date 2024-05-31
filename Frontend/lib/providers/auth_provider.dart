@@ -40,7 +40,17 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> loginUser(String email, String password) async {
     // Login logic...
+    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
+      _hasError = true;
+      _error = 'invalid email';
+      notifyListeners();
+      return;
+    }
+  _isLoading = false;
+    notifyListeners();
   }
+
+  
 
   Future<void> signupUser(String email, String password) async {
     if (email.isEmpty || !email.contains('@') || !email.contains('.')) {

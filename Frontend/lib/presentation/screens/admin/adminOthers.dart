@@ -26,7 +26,7 @@ class AdminOthersPage extends ConsumerWidget {
                 _showNoteDetails(context, note.title);
               },
             );
-          },
+          }, 
         ),
       ),
     );
