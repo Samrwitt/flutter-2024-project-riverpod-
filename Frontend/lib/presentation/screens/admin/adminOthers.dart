@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../application/providers/notes_provider.dart';
+import '../../../data/dataProvider/notes_provider.dart';
 
 class AdminOthersPage extends ConsumerWidget {
   const AdminOthersPage({super.key});
@@ -28,13 +28,13 @@ class AdminOthersPage extends ConsumerWidget {
             final note = notes[index];
             return OthersNotesCard(
               title: note.title,
-              content: note.body,
+              content: note.content,
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (context) => OthersNoteDetailsDialog(
                     noteTitle: note.title,
-                    noteBody: note.body,
+                    noteContent: note.content,
                   ),
                 );
               },
@@ -48,11 +48,11 @@ class AdminOthersPage extends ConsumerWidget {
 
 class OthersNoteDetailsDialog extends StatelessWidget {
   final String noteTitle;
-  final String noteBody;
+  final String noteContent;
 
   const OthersNoteDetailsDialog({
     required this.noteTitle,
-    required this.noteBody,
+    required this.noteContent,
     super.key,
   });
 
@@ -90,7 +90,7 @@ class OthersNoteDetailsDialog extends StatelessWidget {
           const SizedBox(height: 16),
           SingleChildScrollView(
             child: Text(
-              noteBody,
+              noteContent,
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,

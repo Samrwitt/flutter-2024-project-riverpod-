@@ -11,7 +11,10 @@ export class CreateNotesDto {
     @IsNotEmpty()
     userId:string;
 
-    // @IsNotEmpty()
-    // notesId:string;
+    @IsNotEmpty()
+    index:number;
+
+     @IsNotEmpty()
+     notesid:string;
 
 }

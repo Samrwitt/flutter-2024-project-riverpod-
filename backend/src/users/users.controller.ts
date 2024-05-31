@@ -24,7 +24,7 @@ export class UsersController {
 // @UsePipes(new ValidationPipe({transform:true}))
 async register(@Body() createUsersDto:CreateUsersDto):Promise<User>{
     // console.log("inside register")
-    const hashedPassword = await bcrypt.hash(createUsersDto.password,10);
+   const hashedPassword = await bcrypt.hash(createUsersDto.password,10);
 
     const userWithHashedPassword :CreateUsersDto={
         ...createUsersDto,

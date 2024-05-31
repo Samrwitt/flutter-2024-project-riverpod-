@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';//use navigation go router
 
 class AddActivityDialog extends StatelessWidget {
   final TextEditingController userController;
   final TextEditingController activityController;
-  final DateTime selectedDateTime;
+  final DateTime initialDateTime;
   final Function(String, String, DateTime) onAddActivity;
 
   const AddActivityDialog({
     Key? key,
     required this.userController,
     required this.activityController,
-    required this.selectedDateTime,
+    required this.initialDateTime,
     required this.onAddActivity,
   }) : super(key: key);
 
@@ -31,20 +30,24 @@ class AddActivityDialog extends StatelessWidget {
             decoration: const InputDecoration(labelText: 'Activity'),
           ),
           ElevatedButton(
-            onPressed: () => _selectDateTime(context),
+            onPressed: () => selectDateTime(context),
             child: const Text('Select Date and Time'),
           ),
         ],
       ),
       actions: [
         ElevatedButton(
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
-            onAddActivity(userController.text, activityController.text, selectedDateTime);
-            context.pop();
+            onAddActivity(
+              userController.text,
+              activityController.text,
+              initialDateTime,
+            );
+            Navigator.of(context).pop(); // Use Navigator.pop here to close the dialog
           },
           child: const Text('Add'),
         ),
@@ -52,10 +55,10 @@ class AddActivityDialog extends StatelessWidget {
     );
   }
 
-  void _selectDateTime(BuildContext context) async {
+  void selectDateTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: selectedDateTime,
+      initialDate: initialDateTime,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
@@ -63,7 +66,7 @@ class AddActivityDialog extends StatelessWidget {
     if (pickedDate != null) {
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+        initialTime: TimeOfDay.fromDateTime(initialDateTime),
       );
 
       if (pickedTime != null) {
@@ -74,8 +77,11 @@ class AddActivityDialog extends StatelessWidget {
           pickedTime.hour,
           pickedTime.minute,
         );
-        onAddActivity(userController.text, activityController.text, finalDateTime);
-        context.pop();
+        onAddActivity(
+          userController.text,
+          activityController.text,
+          finalDateTime,
+        );
       }
     }
   }

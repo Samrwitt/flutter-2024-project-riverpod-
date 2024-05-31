@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/application/providers/logout_provider.dart';
-import 'package:digital_notebook/application/providers/manage_users_provider.dart';
+import 'package:digital_notebook/data/dataProvider/logout_provider.dart';
+import 'package:digital_notebook/data/dataProvider/manage_users_provider.dart';
 
 class ManageUsersPage extends ConsumerWidget {
-  const ManageUsersPage({Key? key});
+  const ManageUsersPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,8 +16,7 @@ class ManageUsersPage extends ConsumerWidget {
         title: const Text('Manage Users'),
         actions: [
           IconButton(
-            onPressed: () =>
-                context.go('/logout'), // Using GoRouter for navigation
+            onPressed: () => context.go('/logout'), // Using GoRouter for navigation
             icon: const Icon(Icons.logout),
           ),
         ],
@@ -26,12 +25,10 @@ class ManageUsersPage extends ConsumerWidget {
         data: (users) => ListView.builder(
           itemCount: users.length,
           itemBuilder: (_, index) => ListTile(
-            title: Text(users[index].name),
-            subtitle: Text(users[index].email),
+            title: Text(users[index].email),
             trailing: IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () => _confirmDeleteUser(
-                  context, users[index].id, ref), // Pass the ref to the function
+              onPressed: () => _confirmDeleteUser(context, users[index].id, ref),
             ),
           ),
         ),
@@ -54,15 +51,22 @@ class ManageUsersPage extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              // Call the provider method to delete the user
               ref.read(manageUsersProvider.notifier).deleteUser(userId);
               context.pop(); // Close the dialog
-              // context.go(
-              //     '/deleteUser/$userId'); // GoRouter navigation for deletion
+              _showDeletionSnackbar(context); // Show a snackbar notification
             },
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDeletionSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('User deleted successfully'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

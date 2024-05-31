@@ -1,3 +1,3 @@
 export const jwtConstants ={
-    secret:'web group project secret code',
+    secret: process.env.JWT_SECRET || 'MOBILE group project secret code',
 };

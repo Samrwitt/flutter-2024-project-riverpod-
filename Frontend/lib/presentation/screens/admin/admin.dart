@@ -1,15 +1,19 @@
-import 'package:digital_notebook/data/models/activity_model.dart';
-import 'package:digital_notebook/presentation/widgets/admin_avatar.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/application/providers/activities_provider.dart';
 import 'add_activity_dialog.dart';
+import 'package:digital_notebook/presentation/widgets/admin_avatar.dart';
 import 'adminOthers.dart';
 import 'adminNotes.dart';
+import 'package:intl/intl.dart';
+import 'package:digital_notebook/domain/models/activity_model.dart';
+import 'package:digital_notebook/data/dataProvider/activities_provider.dart';
+import 'package:go_router/go_router.dart'; // Import go_router
 
 class AdminPage extends ConsumerStatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+  final String userId;
+
+  const AdminPage({super.key, required this.userId});
 
   @override
   ConsumerState<AdminPage> createState() => _AdminPageState();
@@ -24,6 +28,7 @@ class _AdminPageState extends ConsumerState<AdminPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabSelection);
+    ref.read(activitiesProvider.notifier).fetchActivities();
   }
 
   void _handleTabSelection() {
@@ -40,30 +45,29 @@ class _AdminPageState extends ConsumerState<AdminPage>
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
-          const AdminCircleAvatarWidget(), // Using the avatar widget
+          const AdminCircleAvatarWidget(),
         ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           _buildActivitiesList(context, activities),
-          const AdminNotepage(currentIndex: 0, userId: 'specified-user-id'),
+          const AdminNotepage(userId: ''),
           const AdminOthersPage(),
         ],
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton(
               onPressed: () => _showAddActivityDialog(context),
-              backgroundColor: Color.fromARGB(255, 76, 109, 125),
+              backgroundColor: const Color.fromARGB(255, 76, 109, 125),
               child: const Icon(Icons.add),
             )
           : null,
       bottomNavigationBar: Material(
-        color: Theme.of(context).primaryColor,
         child: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(icon: Icon(Icons.history), text: 'Activities'),
+            Tab(icon: Icon(Icons.history), text: 'Logs'),
             Tab(icon: Icon(Icons.note), text: 'Notes'),
             Tab(icon: Icon(Icons.people), text: "Other's Notes"),
           ],
@@ -86,12 +90,11 @@ class _AdminPageState extends ConsumerState<AdminPage>
             children: [
               IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () => _showEditActivityDialog(context, index),
+                onPressed: () => _showEditActivityDialog(context, index, activity),
               ),
               IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: () =>
-                    ref.read(activitiesProvider.notifier).deleteActivity(index),
+                onPressed: () => ref.read(activitiesProvider.notifier).deleteActivity(index, activity.id!),
               ),
             ],
           ),
@@ -107,26 +110,24 @@ class _AdminPageState extends ConsumerState<AdminPage>
         return AddActivityDialog(
           userController: TextEditingController(),
           activityController: TextEditingController(),
-          selectedDateTime: DateTime.now(),
+          initialDateTime: DateTime.now(),
           onAddActivity: (String user, String activity, DateTime dateTime) {
-            ref
-                .read(activitiesProvider.notifier)
-                .addActivity(user, activity, dateTime);
-            Navigator.of(context).pop();
+            _addActivity(user, activity, dateTime);
+            context.pop();
           },
         );
       },
     );
   }
 
-  void _showEditActivityDialog(BuildContext context, int index) {
-    final activity = ref.read(activitiesProvider)[index];
+  void _showEditActivityDialog(BuildContext context, int index, Activity activity) {
     final editUserController = TextEditingController(text: activity.user);
     final editActivityController = TextEditingController(text: activity.name);
     DateTime selectedEditDateTime;
-    try {
-      selectedEditDateTime = DateTime.parse(
-          '${activity.date} ${activity.time.padLeft(5, '0')}:00');
+
+
+try {
+      selectedEditDateTime = DateTime.parse('${activity.date} ${activity.time.padLeft(5, '0')}:00');
     } catch (e) {
       selectedEditDateTime = DateTime.now();
     }
@@ -144,14 +145,10 @@ class _AdminPageState extends ConsumerState<AdminPage>
                   TextField(
                     controller: editUserController,
                     decoration: const InputDecoration(labelText: 'User'),
-                    style: const TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                   TextField(
                     controller: editActivityController,
                     decoration: const InputDecoration(labelText: 'Activity'),
-                    style: const TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255)),
                   ),
                   ElevatedButton(
                     onPressed: () async {
@@ -165,8 +162,7 @@ class _AdminPageState extends ConsumerState<AdminPage>
                       if (pickedDate != null) {
                         final TimeOfDay? pickedTime = await showTimePicker(
                           context: context,
-                          initialTime:
-                              TimeOfDay.fromDateTime(selectedEditDateTime),
+                          initialTime: TimeOfDay.fromDateTime(selectedEditDateTime),
                         );
 
                         if (pickedTime != null) {
@@ -190,20 +186,20 @@ class _AdminPageState extends ConsumerState<AdminPage>
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
                     _editActivity(
                       index,
                       editUserController.text,
                       editActivityController.text,
                       selectedEditDateTime,
                     );
-                  },
-                  child: const Text('Save'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Save'),
                 ),
               ],
             );
@@ -213,13 +209,22 @@ class _AdminPageState extends ConsumerState<AdminPage>
     );
   }
 
-  void _editActivity(
-      int index, String newUser, String newName, DateTime newDateTime) {
+  void _addActivity(String user, String activity, DateTime dateTime) {
+    ref.read(activitiesProvider.notifier).addActivity(
+          user,
+          activity,
+          dateTime,
+          '',
+        );
+  }
+
+  void _editActivity(int index, String newUser, String newName, DateTime newDateTime) {
     ref.read(activitiesProvider.notifier).editActivity(
           index,
           newUser,
           newName,
           newDateTime,
+          '',
         );
   }
 }

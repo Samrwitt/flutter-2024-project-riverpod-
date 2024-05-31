@@ -1,74 +1,69 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/schemas/user.schema';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
-import { access } from 'fs';
-import { Request,Response, response } from 'express';
 import { jwtConstants } from './constants';
-
-
 
 @Injectable()
 export class AuthService {
+  private tokenBlacklist: Set<string> = new Set(); // Token blacklist
+
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any>| null {
+  async generateJwtToken(user: any): Promise<string> {
+    const payload = { id: user._id, role: user.role }; // Ensure _id is used if Mongoose
+    return this.jwtService.signAsync(payload, { secret: jwtConstants.secret });
+  }
+
+  async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    // console.log(user)
-    try{
     if (!user) {
-         throw new UnauthorizedException('Incorrect email');
+      throw new UnauthorizedException('Incorrect email');
     }
-    else if (await bcrypt.compare(password, user.password)) {
-      return user;
+    const passwordMatches = await bcrypt.compare(password, user.password);
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Incorrect password');
     }
-     throw new UnauthorizedException('Incorrect password');
+    return user;
   }
-  catch(error){
-    throw error;
 
+  async login(email: string, password: string): Promise<any> {
+    const user = await this.validateUser(email, password);
+    if (user) {
+      const access_token = await this.generateJwtToken(user);
+      return { access_token, user }; // Ensure _id is used if Mongoose
+    } else {
+      throw new UnauthorizedException('Invalid credentials');
+    }
   }
-}
-  async login(email:string,password:string):Promise<any>{
-    const user = await this.validateUser(email,password);
 
-    try{
-    if (user){
-        const payload ={id:user._id,role:user.role};
-         // for signing the token use the secrte key from the constants.ts file
-        const access_token= await this.jwtService.signAsync(payload);
-
-        return {access_token,user};
+  async validateToken(token: string): Promise<void> {
+    if (this.isTokenBlacklisted(token)) {
+      throw new UnauthorizedException('Token is blacklisted');
     }
-        else{
-            throw  new UnauthorizedException("Invalid creditionals")
-
+    try {
+      const decoded = this.jwtService.verify(token, { secret: jwtConstants.secret });
+      const { id } = decoded;
+      // Here you should find the user by id and attach it to the request
+      const user = await this.usersService.findOne(id);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
     }
-  } catch(error){
-    throw error;
   }
-  
-  
-}
 
-  async validateToken(request:any):Promise<boolean>{
-    const bearerToken = request.headers.auhorization;
-    if (!bearerToken){
-      return false;
-    }
-    const token = bearerToken.replace('Bearer','');
-    try{
-      const decoded = this.jwtService.verify(token);
-      request.user = decoded;
-      return true;
-    }
-    catch (error){
-      throw new UnauthorizedException("Invalid Token")
-    }
+  // Add logout method to blacklist token
+  async logout(token: string): Promise<void> {
+    this.tokenBlacklist.add(token);
+  }
+
+  // Helper method to check if token is blacklisted
+  isTokenBlacklisted(token: string): boolean {
+    return this.tokenBlacklist.has(token);
   }
 }
-

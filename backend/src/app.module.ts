@@ -7,6 +7,7 @@ import { NotesModule } from './notes/notes.module';
 import { AdminModule } from './admin/admin.module';
 import { LogsModule} from "./Logs/logs.module";
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 import { createMongooseOptions } from 'database.config';
 // import { AuthMiddleware } from './auth/auth.middleware';
 
@@ -15,6 +16,9 @@ import { createMongooseOptions } from 'database.config';
   imports: [AuthModule, UsersModule, NotesModule, LogsModule, AdminModule, AdminModule,
     MongooseModule.forRootAsync({
       useFactory: createMongooseOptions,
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigModule available globally
     }),],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import {  Document, Types } from "mongoose";
 
 // export type noteDocument =HydratedDocument<note>;
 
+
 @Schema()
 export class Note{
     @Prop({required:true})
@@ -12,7 +13,7 @@ export class Note{
     @Prop({required:true})
     content:string;
 
-    @Prop({type:Types.ObjectId,ref:'User'})
+    @Prop({ref:'User', required:true})
     userId:string;
 
     //Time stamps
@@ -22,9 +23,11 @@ export class Note{
     @Prop({default:Date.now})
     updatedAt:Date;
 
-    @Prop()
+    @Prop({ type: Types.ObjectId })
     notesid:Types.ObjectId;
-    
+
+    @Prop( {required: true})
+    index:number;   
 }
 export type NoteDocument = Note & Document;
 export const NoteSchema =SchemaFactory.createForClass(Note);

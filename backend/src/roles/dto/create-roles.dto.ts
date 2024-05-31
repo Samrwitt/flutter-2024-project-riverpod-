@@ -1,3 +1,3 @@
 export class CreateRolesDto {
-    name:string;
+    username:string;
 }

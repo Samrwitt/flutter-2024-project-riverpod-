@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:digital_notebook/data/models/note_model.dart';
+import 'package:uuid/uuid.dart'; // Import the uuid package
+import 'package:digital_notebook/domain/models/note_model.dart';
 import 'package:go_router/go_router.dart';
 
 class AddNote extends StatefulWidget {
@@ -20,12 +21,12 @@ class AddNote extends StatefulWidget {
 
 class _AddNoteState extends State<AddNote> {
   final _titleController = TextEditingController();
-  final _bodyController = TextEditingController();
+  final _contentController = TextEditingController();
 
   @override
   void dispose() {
     _titleController.dispose();
-    _bodyController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -56,7 +57,7 @@ class _AddNoteState extends State<AddNote> {
             ),
             const SizedBox(height: 10),
             TextFormField(
-              controller: _bodyController,
+              controller: _contentController,
               style: const TextStyle(fontSize: 18, color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,
@@ -66,12 +67,19 @@ class _AddNoteState extends State<AddNote> {
             ),
             ElevatedButton(
               onPressed: () {
+                 // Create a new instance of Uuid
                 final note = Note(
-                  title: _titleController.text,
-                  body: _bodyController.text,
+                  title: _titleController.text.isNotEmpty ? _titleController.text :'Untitled',
+                  content: _contentController.text.isNotEmpty ? _contentController.text :'No content',
                   index: widget.currentIndex,
                   userId: widget.userId,
+                  createdAt:DateTime.now(),
+                  updatedAt:DateTime.now(),
                 );
+
+                // Debugging: Print the note values to ensure they are not null
+                print('Note to add: ${note.toJson()}');
+
                 widget.onNewNoteCreated(note);
                 context.pop(); // Using GoRouter to navigate back
               },

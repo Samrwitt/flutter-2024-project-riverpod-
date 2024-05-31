@@ -1,28 +1,10 @@
+import 'package:digital_notebook/data/dataProvider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/application/providers/user_provider.dart';
+import 'package:digital_notebook/data/dataProvider/user_provider.dart';
 
-// Provider for handling the logout functionality
-final logoutProvider = Provider.autoDispose<void Function(BuildContext)>((ref) {
-  return (BuildContext context) {
-    context.go('/'); // Using GoRouter to navigate to the home or login page
-  };
-});
-
-// Provider for handling the delete account functionality
-final deleteAccountProvider =
-    Provider.autoDispose<void Function(BuildContext)>((ref) {
-  return (BuildContext context) {
-    // Implement your delete account logic here
-    context.go(
-        '/'); // Assuming the logout process or redirect to a confirmation page
-  };
-});
-
-// Provider for handling the update profile functionality
-final updateProfileProvider =
-    Provider.autoDispose<void Function(BuildContext)>((ref) {
+final updateProfileProvider = Provider.autoDispose<void Function(BuildContext)>((ref) {
   return (BuildContext context) {
     context.go('/updateProfile'); // Navigating using GoRouter
   };
@@ -33,9 +15,8 @@ class CircleAvatarWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logout = ref.watch(logoutProvider);
-    final deleteAccount = ref.watch(deleteAccountProvider);
-    final updateProfile = ref.watch(updateProfileProvider);
+    final authProvider = ref.read(authProviderProvider);
+    final updateProfile = ref.read(updateProfileProvider);
     final user = ref.watch(userProvider);
 
     return PopupMenuButton<String>(
@@ -44,7 +25,7 @@ class CircleAvatarWidget extends ConsumerWidget {
           PopupMenuItem<String>(
             value: 'email',
             child: Text(
-              user?.email ?? 'No Email',
+              user?.email ?? 'No Email', // Accessing the email directly from user
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             enabled: false, // This item is just a display for the email
@@ -70,17 +51,45 @@ class CircleAvatarWidget extends ConsumerWidget {
             updateProfile(context);
             break;
           case 'deleteAccount':
-            deleteAccount(context);
+            _confirmDeleteAccount(context, authProvider);
             break;
           case 'logout':
-            logout(context);
+            authProvider.logout();
             break;
         }
       },
-      child: const CircleAvatar(
+      child: CircleAvatar(
         backgroundImage: AssetImage(
-            'assets/images/avatar.png'), // Ensure this asset is correctly placed in your assets directory
+          'assets/images/avatar.png', // Ensure this asset is correctly placed in your assets directory
+        ),
       ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context, AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Account'),
+          content: Text('Are you sure you want to delete your account? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                authProvider.deleteAccount();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

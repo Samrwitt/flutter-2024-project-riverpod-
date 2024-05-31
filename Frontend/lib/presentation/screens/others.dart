@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/application/providers/ui_provider.dart';
-import 'package:digital_notebook/application/providers/notes_provider.dart';
+import 'package:digital_notebook/data/dataProvider/ui_provider.dart';
+import 'package:digital_notebook/data/dataProvider/notes_provider.dart';
 import 'package:digital_notebook/presentation/widgets/email.dart';
 
 final emailFieldProvider =
@@ -30,8 +30,8 @@ class OthersNotesPage extends ConsumerWidget {
           final note = notes[index];
           return OthersNotesCard(
             title: note.title,
-            content: note.body,
-            onTap: () => _showNoteDetails(context, note.title, note.body),
+            content: note.content,
+            onTap: () => _showNoteDetails(context, note.title, note.content),
           );
         },
       ),

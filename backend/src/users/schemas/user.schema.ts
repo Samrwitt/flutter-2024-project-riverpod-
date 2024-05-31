@@ -1,24 +1,24 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
-import { Role } from "src/roles/role.enum";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+import { Role } from 'src/roles/role.enum';
 
-export type UserDocument = User & Document;
-
-@Schema({ timestamps: true }) // This will automatically add createdAt and updatedAt fields
+@Schema()
 export class User {
-    @Prop({ required: true, unique: true })
-    email: string;
+  @Prop({ type: Types.ObjectId })
+  id: Types.ObjectId;
 
-    @Prop({ required: true })
-    username: string;
+  @Prop({ required: true })
+  username: string;
 
-    @Prop({ required: true })
-    password: string;
+  @Prop({ required: true, unique: true })
+  email: string;
 
-    @Prop()
-    role: Role;
+  @Prop({ required: true })
+  password: string;
 
-    _id: Types.ObjectId;
+  @Prop({ required: true, enum: Role })
+  role: Role;
 }
 
+export type UserDocument = User & Document;
 export const UserSchema = SchemaFactory.createForClass(User);

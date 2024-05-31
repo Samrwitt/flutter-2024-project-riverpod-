@@ -16,19 +16,19 @@ async function bootstrap() {
   const admins= await userService.findAdminUsers();
   if (admins.length ===0){
     const admin1= {
-      name:"admin",
+      username:"admin",
       email:"'admin@gmail.com",
       password:"adminadmin",
       role:Role.Admin,
   };
-  const admin2 ={
-      name:"admintwo",
-      email:"admintwo@gmail.com",
-      password:"adminadmin",
-      role:Role.Admin,
-  }
+  // const admin2 ={
+  //     username:"admintwo",
+  //     email:"admintwo@gmail.com",
+  //     password:"adminadmin",
+  //     role:Role.Admin,
+  // }
   await userService.createAdmin(admin1);
-  await userService.createAdmin(admin2);
+  // await userService.createAdmin(admin2);
   }
   
   await app.listen(3000);

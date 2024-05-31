@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_notebook/data/models/note_model.dart';
-// Ensure your Note model and provider paths are correct
+import 'package:digital_notebook/domain/models/note_model.dart';
 
-final currentlyEditedNoteProvider =
-    StateProvider<Note>((ref) => throw UnimplementedError());
+// Ensure your Note model and provider paths are correct
+final currentlyEditedNoteProvider = StateProvider<Note>((ref) => throw UnimplementedError());
 
 class NoteView extends ConsumerStatefulWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -16,15 +15,21 @@ class NoteView extends ConsumerStatefulWidget {
 
 class _NoteViewState extends ConsumerState<NoteView> {
   late TextEditingController titleController;
-  late TextEditingController bodyController;
+  late TextEditingController contentController;
 
   @override
   void initState() {
     super.initState();
     // Initialize controllers with the current note values
-    final note = ref.read(currentlyEditedNoteProvider);
-    titleController = TextEditingController(text: note.title);
-    bodyController = TextEditingController(text: note.body);
+    try {
+      final note = ref.read(currentlyEditedNoteProvider);
+      titleController = TextEditingController(text: note.title);
+      contentController = TextEditingController(text: note.content);
+    } catch (e) {
+      print('Error initializing note controllers: $e');
+      titleController = TextEditingController();
+      contentController = TextEditingController();
+    }
   }
 
   @override
@@ -35,11 +40,11 @@ class _NoteViewState extends ConsumerState<NoteView> {
       appBar: AppBar(
         title: TextField(
           controller: titleController,
-          style: const TextStyle(fontSize: 30.0, color: Colors.black),
-          decoration: InputDecoration(
+          style: const TextStyle(fontSize: 30.0, color: Colors.white),
+          decoration: const InputDecoration(
             border: InputBorder.none,
             hintText: 'Title',
-            hintStyle: const TextStyle(color: Colors.white),
+            hintStyle: TextStyle(color: Colors.white),
           ),
         ),
         actions: [
@@ -49,7 +54,7 @@ class _NoteViewState extends ConsumerState<NoteView> {
           ),
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: () => _saveNote(context),
+            onPressed: () => _saveNote(),
           ),
         ],
       ),
@@ -60,7 +65,7 @@ class _NoteViewState extends ConsumerState<NoteView> {
           children: [
             const SizedBox(height: 10),
             TextField(
-              controller: bodyController,
+              controller: contentController,
               style: const TextStyle(fontSize: 20, color: Colors.black),
               maxLines: null,
               decoration: const InputDecoration(
@@ -80,8 +85,7 @@ class _NoteViewState extends ConsumerState<NoteView> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title:
-              const Text("Delete Note?", style: TextStyle(color: Colors.white)),
+          title: const Text("Delete Note?", style: TextStyle(color: Colors.white)),
           content: Text("Note '${titleController.text}' will be deleted!"),
           actions: [
             TextButton(
@@ -90,7 +94,8 @@ class _NoteViewState extends ConsumerState<NoteView> {
             ),
             TextButton(
               onPressed: () {
-                // Here you might want to add your delete logic
+                // Add your delete logic here
+                // For example, you might want to call a method to delete the note from the backend or state
                 context.pop(); // Close the dialog
                 context.pop(); // Navigate back from NoteView
               },
@@ -102,20 +107,24 @@ class _NoteViewState extends ConsumerState<NoteView> {
     );
   }
 
-  void _saveNote(BuildContext context) {
-    ref
-        .read(currentlyEditedNoteProvider.notifier)
-        .update((state) => state.copyWith(
+  void _saveNote() {
+    final note = ref.read(currentlyEditedNoteProvider);
+    if (note != null) {
+      ref.read(currentlyEditedNoteProvider.notifier).update(
+            (state) => state.copyWith(
               title: titleController.text,
-              body: bodyController.text,
-            ));
+              content: contentController.text,
+            ),
+          );
+      // Call a method to save the note to the backend or state
+    }
     context.pop(); // Close the NoteView after saving
   }
 
   @override
   void dispose() {
     titleController.dispose();
-    bodyController.dispose();
+    contentController.dispose();
     super.dispose();
   }
 }

@@ -7,6 +7,7 @@ import { Note, NoteSchema } from 'src/notes/schemas/note.schema';
 import { UsersModule } from 'src/users/users.module';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
 import { AuthService } from 'src/auth/auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports:[
@@ -14,6 +15,7 @@ import { AuthService } from 'src/auth/auth.service';
     MongooseModule.forFeature([{ name: Note.name, schema: NoteSchema },
       { name: User.name, schema: UserSchema },]),
     UsersModule,
+    
   ],
   controllers: [AdminController],
   providers: [AdminService,AuthService],

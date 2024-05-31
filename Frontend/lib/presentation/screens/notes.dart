@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../data/models/note_model.dart';
-import '../../application/providers/notes_provider.dart' as providers;
+import '../../domain/models/note_model.dart';
+import '../../data/dataProvider/notes_provider.dart' as providers;
 import '../widgets/note_card.dart';
+import 'package:uuid/uuid.dart';
 import 'others.dart' as others;
 import 'package:digital_notebook/presentation/widgets/avatar.dart';
 
@@ -90,7 +91,7 @@ class _NotepageState extends ConsumerState<Notepage> {
 
   Widget _buildAddNoteView() {
     final titleController = TextEditingController();
-    final bodyController = TextEditingController();
+    final contentController = TextEditingController();
 
     return Padding(
       padding: const EdgeInsets.all(15.0),
@@ -111,7 +112,7 @@ class _NotepageState extends ConsumerState<Notepage> {
           ),
           const SizedBox(height: 10),
           TextFormField(
-            controller: bodyController,
+            controller: contentController,
             style: const TextStyle(fontSize: 18, color: Colors.black),
             decoration: const InputDecoration(
               hintText: "Enter your note here...",
@@ -122,11 +123,15 @@ class _NotepageState extends ConsumerState<Notepage> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
+              
               final note = Note(
-                title: titleController.text,
-                body: bodyController.text,
-                userId: widget.userId,
+               
+                title: titleController.text.isNotEmpty ? titleController.text :'Untitled',
+                content: contentController.text.isNotEmpty ? contentController.text :'No content',
                 index: 0,
+                userId: widget.userId,
+                createdAt:DateTime.now(),
+                updatedAt:DateTime.now(),
               );
               ref.read(providers.notesProvider.notifier).addNote(note);
               toggleAddNote();
@@ -153,10 +158,10 @@ class _NotepageState extends ConsumerState<Notepage> {
                 .read(providers.notesProvider.notifier)
                 .editNoteTitle(note.index, note.title);
           },
-          onNoteBodyEdited: (note) {
+          onNoteContentEdited: (note) {
             ref
                 .read(providers.notesProvider.notifier)
-                .editNoteBody(note.index, note.body);
+                .editNoteContent(note.index, note.content);
           },
         );
       },

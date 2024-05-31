@@ -1,10 +1,11 @@
+// File: lib/ui/pages/signup_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/gestures.dart';
 import '../widgets/email.dart';
 import '../widgets/password.dart';
-import '../../application/providers/auth_provider.dart';
+import '../../data/dataProvider/auth_provider.dart';
 
 final emailFieldProvider = ChangeNotifierProvider((ref) => EmailFieldProvider());
 
@@ -16,13 +17,13 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -33,13 +34,18 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     final authProvider = ref.watch(authProviderProvider);
 
     ref.listen<AuthProvider>(authProviderProvider, (previous, next) {
-      if (!next.hasError && !next.isLoading) {
-        context.go('/notes');
+      if (!next.hasError && !next.isLoading && next.currentUser != null) {
+        context.go('/login'); // Navigate to the notes page if signup is successful
       }
     });
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text(
+          'Sign Up',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -88,9 +94,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  controller: _nameController,
+                  controller: _usernameController,
                   decoration: const InputDecoration(
-                    labelText: 'name',
+                    labelText: 'Username',
                     labelStyle: TextStyle(color: Colors.black),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.blueGrey),
@@ -104,18 +110,18 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 const SizedBox(height: 10),
                 PasswordField(
                   controller: _passwordController,
+
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: authProvider.isLoading
                       ? null
                       : () async {
-                          await authProvider.registerUser(
-                            _nameController.text.trim(),
-                            _emailController.text.trim(),
-                            _passwordController.text.trim(),
-                            context,
-                          );
+                          await ref.read(authProviderProvider.notifier).register(
+                                _usernameController.text.trim(),
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                                                              );
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
